@@ -1,0 +1,58 @@
+$$import com.impossibl.stencil.engine.parsing.ParamOutputBlockMode, java.util.ArrayList;
+$'<html>'.html();$'another'.html();
+$macro test(*params) [header,content,footer] {
+	$foreach param in params {
+		$param.key; = $param.value;
+	};
+	<div>
+	  <div class="header">
+	    $header;
+	  </div>
+	  <div class="content">
+	    $content;
+	  </div>
+	  <div class="footer">
+	    $footer;
+	  </div>
+	</div>
+};
+
+$macro header {
+  ## HEADER ##
+};
+
+$macro content {
+  ## CONTENT ##
+};
+
+$macro footer {
+  ## SOME ##
+  ## FOOTER ##
+};
+
+$var a="AAA", b="BBB", c="CCC";
+
+$test(a,b,c)
+  header {
+  	$ArrayList();
+    $ParamOutputBlockMode.values()[0].class.simpleName.toCharArray()[3];
+    $test.class.methods[0];
+    $with [greeting="Hello",name="Kevin"] {
+      $greeting; $name;!
+    };
+    $header;
+  }
+  content {
+    $content;
+  }
+  footer {
+    $footer;
+  };
+
+$with test {
+	$class.name;
+};
+
+$foreach x,it in [0,1,2,3,4,5] {
+	<tr class="$it.odd?'odd';"> $x; $it.index; $it.count; $it.even; $it.odd; $it.hasNext;</tr>
+};

@@ -917,16 +917,25 @@ public class StencilInterpreter {
       Environment prevEnv = switchEnvironment(new Environment(imported.getPath(), new NullWriter()));
       pushScope();
 
+      Scope importedScope;
       try {
         
         imported.getContext().accept(this);
         
       }
       finally {
-        popScope();
+        importedScope = popScope();        
         switchEnvironment(prevEnv);
       }
     
+      //Import defintions
+      if(object.id == null) {
+    	  currentScope.values.putAll(importedScope.values);
+      }
+      else {
+    	  currentScope.declare(object.id.getText(), importedScope.values);
+      }
+
       return null;
     }
     
@@ -1871,81 +1880,8 @@ public class StencilInterpreter {
       if(logger.isTraceEnabled()) {
         logger.trace("Evaluating call selector: {}", sel.getText());
       }
-      
-      if (source == null) {
-        logger.error("Attempt to call null " + getLocation(sel));
-        return null;
-      }
-      else if (source instanceof BoundMacro) {
-  
-        BoundMacro boundMacro = (BoundMacro) source;
-        BoundBlock boundBlock = new BoundBlock(boundMacro);
-  
-        Map<String, Object> params = bind(boundMacro.source.callSig, sel.call);
-  
-        boundBlock.bind(params);
-  
-        return boundBlock;
-  
-      }
-      else if (source instanceof BoundFunction) {
-  
-        BoundFunction boundFunction = (BoundFunction) source;
-  
-        Map<String, Object> params = bind(boundFunction.source.callSig, sel.call);
-  
-        return boundFunction.call(params);
-      }
-      else if(source instanceof Callable) {
-        
-        Callable function = (Callable) source;
-        
-        CallableSignatureContext sig;
-        try {
-          sig = extensionCallableSignatureCache.get(function);
-        }
-        catch (java.util.concurrent.ExecutionException e) {
-          throw new RuntimeException(e);
-        }
-        
-        Map<String,Object> params = bind(sig, sel.call);
-        
-        try {
-          return function.call(params);
-        }
-        catch (Throwable e) {
-          throw new InvocationException("error invoking extension function", getLocation(sel), e);
-        }
-      }
-      else if(source instanceof Class<?>) {
-        
-        Class<?> type = (Class<?>) source;
-        
-        if(sel.call.namedParams != null) {
-          throw new InvocationException("error invoking constructor: named parameters not allowed for constructors", getLocation(sel));
-        }
-  
-        List<Object> paramValues;
-        if(sel.call.posParams != null) {
-          paramValues = eval(sel.call.posParams.exprs);
-        }
-        else {
-          paramValues = Collections.emptyList();
-        }
-        
-        try {
-          return ConstructorUtils.invokeConstructor(type, paramValues.toArray());
-        }
-        catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
-          throw new ExecutionException("error invoking constructor: ", getLocation(sel));
-        }
-        catch (NoSuchMethodException e) {
-          return null;
-        }
-        
-      }
-  
-      throw new ExecutionException("invalid call expression", getLocation(sel));
+
+      return selectCall(source, sel.call, sel);
     }
 
     Object select(Object source, MethodCallSelectorContext sel) {
@@ -1984,7 +1920,7 @@ public class StencilInterpreter {
         
         }
         catch (NoSuchMethodException e) {
-          
+        
           Method extensionMethod = getExtensionMethod(source.getClass(), name);
           if(extensionMethod != null) {
             
@@ -2002,8 +1938,12 @@ public class StencilInterpreter {
           }
           else {
             
-            return null;
+            source = selectMember(source, name, true, sel);
+            if(source != null) {
+            	return selectCall(source, sel.call, sel);
+            }
             
+            return null;
           }
           
         }
@@ -2061,6 +2001,84 @@ public class StencilInterpreter {
       return selectMember(source, name(sel), true, sel);
     }
     
+    Object selectCall(Object source, CallableInvocationContext inv, ParserRuleContext loc) {
+      
+      if (source == null) {
+        logger.error("Attempt to call null " + getLocation(loc));
+        return null;
+      }
+      else if (source instanceof BoundMacro) {
+  
+        BoundMacro boundMacro = (BoundMacro) source;
+        BoundBlock boundBlock = new BoundBlock(boundMacro);
+  
+        Map<String, Object> params = bind(boundMacro.source.callSig, inv);
+  
+        boundBlock.bind(params);
+  
+        return boundBlock;
+  
+      }
+      else if (source instanceof BoundFunction) {
+  
+        BoundFunction boundFunction = (BoundFunction) source;
+  
+        Map<String, Object> params = bind(boundFunction.source.callSig, inv);
+  
+        return boundFunction.call(params);
+      }
+      else if(source instanceof Callable) {
+        
+        Callable function = (Callable) source;
+        
+        CallableSignatureContext sig;
+        try {
+          sig = extensionCallableSignatureCache.get(function);
+        }
+        catch (java.util.concurrent.ExecutionException e) {
+          throw new RuntimeException(e);
+        }
+        
+        Map<String,Object> params = bind(sig, inv);
+        
+        try {
+          return function.call(params);
+        }
+        catch (Throwable e) {
+          throw new InvocationException("error invoking extension function", getLocation(loc), e);
+        }
+      }
+      else if(source instanceof Class<?>) {
+        
+        Class<?> type = (Class<?>) source;
+        
+        if(inv.namedParams != null) {
+          throw new InvocationException("error invoking constructor: named parameters not allowed for constructors", getLocation(inv));
+        }
+  
+        List<Object> paramValues;
+        if(inv.posParams != null) {
+          paramValues = eval(inv.posParams.exprs);
+        }
+        else {
+          paramValues = Collections.emptyList();
+        }
+        
+        try {
+          return ConstructorUtils.invokeConstructor(type, paramValues.toArray());
+        }
+        catch (IllegalAccessException | InvocationTargetException | InstantiationException e) {
+          throw new ExecutionException("error invoking constructor: ", getLocation(inv));
+        }
+        catch (NoSuchMethodException e) {
+          return null;
+        }
+        
+      }
+  
+      throw new ExecutionException("invalid call expression", getLocation(inv));
+    }
+
     Object selectMemberIndex(Object source, String member, Object index, ParserRuleContext loc) {
       
       if(source == null) {

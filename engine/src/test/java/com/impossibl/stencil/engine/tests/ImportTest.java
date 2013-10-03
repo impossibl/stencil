@@ -28,14 +28,18 @@
  */
 package com.impossibl.stencil.engine.tests;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import org.junit.Test;
 
-@RunWith(Suite.class)
-@SuiteClasses({
-  ExpressionTest.class, MacroTest.class, OutputTest.class, StatementTest.class, HtmlExtensionMethodsTest.class,
-  ImportTest.class, CommentTest.class, ErrorTest.class, FunctionTest.class})
-public class AllTests {
+public class ImportTest extends Tests {
+
+  @Test
+  public void testImport() {
+    assertMatch("$$import 'src/test/resources/import.stencil';$imported('IMPORTED');","IMPORTED");
+  }
+
+  @Test
+  public void testImportAs() {
+    assertMatch("$$import 'src/test/resources/import.stencil' as imp;$imp.imported('IMPORTED');","IMPORTED");
+  }
 
 }

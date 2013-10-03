@@ -1,0 +1,85 @@
+---
+layout: default
+title: Extensions - Stencil
+---
+<h1>Extensions</h1>
+
+<p>
+	Stencil supports easily extending its features with code written in Java.
+</p>
+
+
+<h2>Simple</h2>
+<p>
+	Since Stencil's <a href="expressions.html">expression</a> language can access
+	any Java method usually the easiest way to extend Stencil is to pass in a Java
+	object with the methods you like to use.
+	
+	{% highlight java %}
+	StencilEngine engine = new StencilEngine();
+	
+	Map<String,Object> params = new HashMap<>();
+	params.put("myCustomObject", new MyCustomObject());
+	
+	engine.render("myTemplate.st", params);
+	
+	{% endhighlight %}
+	
+	While rendering the template then has access to any methods defined on the MyCustomObject class.
+</p>
+
+<h2>Advanced</h2>
+<p>
+	Sometimes more advanced integration is needed or wanted. To do that you can implement one or both of 
+	the extension interfaces to handle calling and block passing. In API parlance "block passing" is known
+	as "preparation".
+</p>
+<p>
+	Once you've implemented the interface you can simply pass the implementations into Stencil as parameters,
+	provide them through <a href="engine-api.html">globals</a>.
+</p>
+<p>
+	Function Calling
+	{% highlight java %}
+	public interface Callable {
+	  
+	  public static final String ALL_PARAM_NAME = "*";
+	
+		String[] getParameterNames();
+		Object call(Map<String,?> params) throws Throwable;
+		
+	}
+	{% endhighlight %}
+	
+	Implement this interface is as easy as providing a list of parameters your extension will accept when called
+	and providing the functionality in the call method.
+</p>
+<p>
+	NOTE: Using the ALL_PARAM_NAME will allow you to receive any and all parameters passed to the method.
+	<a href="macros.html#blocks">See Parameters</a> for more information
+</p>
+<p>
+	Preparation
+	{% highlight java %}
+	public interface Preparable {
+	  
+	  public static final String ALL_BLOCK_NAME = "*";
+	  public static final String UNNAMED_BLOCK_NAME = "+";
+	
+		String[] getBlockNames();
+		Object prepare(Map<String,?> params) throws Throwable;
+		
+	}
+	{% endhighlight %}
+
+	Implement this interface is as easy as providing a list of blocks your extension will accept when prepared
+	and providing the functionality in the prepare method.
+</p>
+<p>
+	NOTE: Using the ALL_PARAM_NAME will allow you to receive any and all parameters passed to the method.
+	<a href="macros.html#blocks">See Blocks</a> for more information
+</p>
+<p>
+	NOTE: Using the UNNAMED_BLOCK_NAME will allow you to receive an unnamed block if one was passed.
+	<a href="macros.html#blocks">See Blocks</a> for more information
+</p>

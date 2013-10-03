@@ -1,0 +1,188 @@
+---
+layout: default
+title: Engine API - Stencil
+---
+<h1>Engine API</h1>
+<p>
+	Stencil features an API that is simple to use but provides many powerful features if the need arises.
+</p>
+
+<h2><a id="rendering">Rendering</a></h2>
+<p>
+	Rendering a template from the filesystem is a fairly easy task.
+	{% highlight java %}
+	StencilEngine engine = new StencilEngine();
+	
+	String text = engine.render("myTemplate.st");
+	
+	System.out.println(text);	
+	{% endhighlight %}
+</p>
+
+<p>
+	Passing parameters to a template is also easy.
+	{% highlight java %}
+	StencilEngine engine = new StencilEngine();
+	
+	Map<String,Object> params = new HashMap<>();
+	params.put("title", "My Page!");
+	
+	String text = engine.render("myTemplate.st", params);
+	
+	System.out.println(text);
+	{% endhighlight %}
+	
+	NOTE: A template will ignore any <a href="templates.html#parameters">parameters</a> not declared in
+	its header.
+</p>
+
+<p>
+	You may want to render the same template multiple times or lookup a template
+	to render in advance. You can do that with the 'load' method.
+	{% highlight java %}
+	
+	StencilEngine engine = new StencilEngine();
+	
+	Template myTemplate = engine.load("myTemplate.st");
+	
+	String text = engine.render(myTemplate);
+	
+	System.out.println(text);
+	{% endhighlight %}
+</p>
+
+<p>
+	Stencil also supports rendering directly to a character stream.
+	{% highlight java %}
+	StencilEngine engine = new StencilEngine();
+	
+	Template myTemplate = engine.load("myTemplate.st");
+	StringWriter out = new StringWriter();
+	
+	engine.render(myTemplate, out);
+	
+	System.out.println(out.toString());
+	{% endhighlight %}
+</p>
+
+
+<h2><a id="loading">Loading</a></h2>
+<p>
+	Stencil supports a pluggable template loading system. You can plugin any template loading
+	system you'd like by implementing the interface
+	{% highlight java %}
+	public interface TemplateSourceLoader {
+	  
+	  TemplateSource find(String path) throws IOException;
+	
+	}
+	{% endhighlight %}
+	and return a TemplateSource object for the requested path. From there Stencil
+	handles loading the template from source and caching it.
+</p>
+<p>
+	To use a custom loader you simply provide it in the engine constructor
+	{% highlight java %}
+	StencilEngine engine = new StencilEngine(myTemplateSourceLoader);
+	{% endhighlight %}
+	
+	<br/>
+	The default source loader can load source from any URI (including files). In the servlet
+	project another source loader is available that can load from servlet resources.
+</p>
+
+
+<h2><a id="globals">Globals</a></h2>
+<p>
+	Stencil supports global scopes that free you from having to pass all your variables and
+	<a href="extension-api.html">extensions</a> into the template at rendering time. These
+	global scopes can lookup variables in any imaginable way simply by name.
+</p>
+<p>
+	To implement your own global scope you implement the interface
+	{% highlight java %}
+	public interface GlobalScope {
+	  
+		Object get(String name);
+	
+	}
+	{% endhighlight %}
+</p>
+<p>
+	To use one or more global scopes you set them against the engine after it
+	has been constructed.
+	{% highlight java %}
+	StencilEngine engine = new StencilEngine();
+	
+	engine.setGlobalScopes(Arrays.asList(myGlobalScope));
+	{% endhighlight %}	
+</p>
+<p>
+	To make global location even easier.  Stencil uses the Java
+	<a href="http://docs.oracle.com/javase/tutorial/sound/SPI-intro.html">Service Provider Interface</a>
+	to locate GlobalScope implementations.
+</p>
+<h3>CDI Globals</h3>
+<p>
+	As an extension, and provided in a separate library, Stencil Supports
+	<a href="http://docs.oracle.com/javaee/6/tutorial/doc/giwhl.html">CDI</a> named Beans
+	as globals.
+<p>
+	This means when you have the Stencil CDI library included you only need to name your
+	beans for them to be available in templates.
+</p>
+<p>
+	Stencil CDI integration uses the GlobalScope service provider interface. This means
+	to enable it you only need to include Stencil's <a href="get.html#projects">engine-cdi</a> library in your class path.
+</p>
+
+
+<h2><a id="caching">Caching</a></h2>
+<p>
+	Stencil has primetime support for caching. By default it caches the loaded
+	templates until it detects that it has been modified.
+</p>
+<h3>Complete Check</h3>
+<p>
+	To determine if a template has been modified the engine
+	asks the source loader. The default loader uses a combination of modification
+	dates and MD5 hashes to determine when a template has change.
+</p>
+<p>
+	The engine also has one feature that really helps during development. When
+	checking if a template has been modified it also checks all includes and
+	imports as well.  This feature can save a lot of time hunting down why
+	a modified template didn't update.
+</p>
+<p>
+	Since the complete modification check can be time consuming it can be
+	turned enabled/disabled at anytime using this method
+	{% highlight java %}
+	StencilEngine.setCompleteModificationCheck(boolean enabled);
+	{% endhighlight %}
+</p>
+<h3>Custom Caching</h3>
+<p>
+	When Stencil's default caching scheme doesn't suit your needs you can alter
+	the caching behavior with a custom caching scheme.
+</p>
+<p>
+	To implement your own caching scheme you implement the interface
+	{% highlight java %}
+	public interface TemplateCache {
+	  
+	  CachedTemplate get(URI uri);
+	  CachedTemplate update(URI uri, CachedTemplate cachedTemplate);
+	  void remove(URI uri);
+	
+	}
+	{% endhighlight %}
+</p>
+<p>
+	To use your custom caching scheme you provide it in the engine constructor.
+	{% highlight java %}
+	StencilEngine engine = new StencilEngine(myTemplateLoader, myTemplateCache);
+	{% endhighlight %}	
+</p>
+
+

@@ -1,15 +1,28 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
 	<modelVersion>4.0.0</modelVersion>
+
 	<groupId>com.impossibl.stencil</groupId>
+
 	<artifactId>root</artifactId>
+
 	<version>0.0.1-SNAPSHOT</version>
+
 	<packaging>pom</packaging>
+
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>7</version>
+  </parent>
+
 	<modules>
 		<module>engine</module>
 		<module>engine-cdi</module>
 		<module>engine-servlet</module>
 	</modules>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -22,4 +35,33 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<name>Stencil Template Engine Root</name>
+	<url>http://impossibl.github.io/stencil/</url>
+	<description>
+	 Stencil is a templating language to Java that makes layouts and template reuse a simple task. With support for macros, functions, and advanced expressions it's a truly useful language with a simple and elegant syntax. It has an advanced API and is suitable for use in standalone and server environments.
+  </description>
+	<inceptionYear>2013</inceptionYear>
+	<organization>
+		<name>Impossibl.com</name>
+		<url>http://www.impossibl.com</url>
+	</organization>
+	<licenses>
+	 <license>
+	   <name>BSD Revised</name>
+	   <url>http://opensource.org/licenses/BSD-3-Clause</url>
+	   <distribution>repo</distribution>
+	 </license>
+	</licenses>
+	<scm>
+	 <url>https://github.com/impossibl/stencil</url>
+	 <connection>https://github.com/impossibl/stencil.git</connection>
+	</scm>
+	<developers>
+	 <developer>
+	   <id>kdubb</id>
+	   <name>Kevin Wooten</name>
+	 </developer>
+	</developers>
+
 </project>

@@ -5,6 +5,8 @@
 
 	<artifactId>engine</artifactId>
 
+  <packaging>jar</packaging>
+
 	<parent>
 		<groupId>com.impossibl.stencil</groupId>
 		<artifactId>root</artifactId>
@@ -142,4 +144,33 @@
       </plugins>
     </pluginManagement>
 	</build>
+
+  <name>Stencil Template Engine</name>
+  <url>http://impossibl.github.io/stencil/</url>
+  <description>
+   Stencil Template Engine Runtime
+  </description>
+  <inceptionYear>2013</inceptionYear>
+  <organization>
+    <name>Impossibl.com</name>
+    <url>http://www.impossibl.com</url>
+  </organization>
+  <licenses>
+   <license>
+     <name>BSD Revised</name>
+     <url>http://opensource.org/licenses/BSD-3-Clause</url>
+     <distribution>repo</distribution>
+   </license>
+  </licenses>
+  <scm>
+   <url>https://github.com/impossibl/stencil</url>
+   <connection>https://github.com/impossibl/stencil.git</connection>
+  </scm>
+  <developers>
+   <developer>
+     <id>kdubb</id>
+     <name>Kevin Wooten</name>
+   </developer>
+  </developers>
+
 </project>

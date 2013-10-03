@@ -1,0 +1,57 @@
+---
+layout: default
+title: Templates - Stencil
+---
+<h1>Template</h1>
+<p>
+	Stencil templates are can be standalone or they can import and/or include one or more other templates.
+</p>
+
+<h2>Imports</h2>
+<p>
+	A template can import all the macros, functions and variables from other templates using '$$import' syntax. Imports
+	must be at the top of the file (only the parameter/block signature can precede it);
+	<pre>
+		$$import 'layout.st';
+		
+		$layout(title='My Page');
+	</pre>
+	
+</p>
+<p>
+	If macros, functions or variables from one template will conflict with another imported template. You can import a template with
+	a prefix using an 'as' clause.
+	<pre>
+		$$import 'layout.st' as lay;
+		
+		$lay.layout(title='My Page');
+	</pre>
+	
+</p>
+
+
+<h2>Parameters and Blocks</h2>
+<p>
+	A template can be treated as a macro itself by including a 'signature' as the first line of the template
+	using the '$$() []' syntax
+	<pre>
+		$$(title) [header,footer];
+		
+		$header;
+		
+		$title - This template is also a macro!
+		
+		$footer;
+	</pre>
+	
+	You can then use the template with the <a href='outputs.html#include'>'$include'</a> output, including passing parameters and blocks.
+	<pre>
+		$include 'template.st' (title='Hello!')
+			header {
+				My Header
+			}
+			footer {
+				My Footer
+			};
+	</pre>
+</p>

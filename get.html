@@ -1,0 +1,61 @@
+---
+layout: default
+title: Get Stencil
+---
+<h1>Get Stencil</h1>
+<p>
+	Stencil is a Java based template language.  Thus it requires a Java program to run in. It can be
+	used in both server and standalone Java programs quite easily.
+</p>
+<p>
+	Since Stencil is currently under active development the easiest way to get Stencil and keep up to date is using
+	maven... otherwise you can download	a zip of the necessary jars.
+</p>
+
+<h2>Projects</h2>
+<p>
+	Stencil is currently split into 3 projects to keep it's dependencies to the minimum.
+	<ul>
+		<li>engine.jar - required</li>
+		<li>engine-cdi.jar - optional integration with CDI</li>
+		<li>engine-servlet.jar - optional integration with Servlets</li>
+	</ul>
+</p>
+
+<h2><a id="maven">Maven</a></h2>
+<p>
+	<pre>
+		&lt;dependency&gt;
+			&lt;groupId&gt;com.impossibl.stencil&lt;/groupId&gt;
+			&lt;artifactId&gt;engine&lt;/artifactId&gt;
+			&lt;version&gt;0.0.1-SNAPSHOT&lt;/version&gt;
+		&lt;/dependency&gt;
+	</pre>
+	<pre>
+		&lt;dependency&gt;
+			&lt;groupId&gt;com.impossibl.stencil&lt;/groupId&gt;
+			&lt;artifactId&gt;engine-cdi&lt;/artifactId&gt;
+			&lt;version&gt;0.0.1-SNAPSHOT&lt;/version&gt;
+		&lt;/dependency&gt;
+	</pre>
+	<pre>
+		&lt;dependency&gt;
+			&lt;groupId&gt;com.impossibl.stencil&lt;/groupId&gt;
+			&lt;artifactId&gt;engine-servlet&lt;/artifactId&gt;
+			&lt;version&gt;0.0.1-SNAPSHOT&lt;/version&gt;
+		&lt;/dependency&gt;
+	</pre>
+</p>
+
+
+<h2><a id="jar">Download</a></h2>
+<p>
+	These release archives only include the project jars.  You will need to separately
+	download the required dependencies.  To determine what the needed dependencies are
+	go to the GitHub project and exam the associated versions pom.xml.
+
+	Releases
+	<ul>
+		<li><a href="releases/0.0.1-SNAPSHOT.zip">0.0.1-SNAPSHOT</a></li>
+	</ul>
+</p>

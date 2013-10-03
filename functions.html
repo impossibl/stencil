@@ -1,0 +1,287 @@
+---
+layout: default
+title: Functions - Stencil
+---
+<style>
+	pre {
+		background-color: #ddd;
+		border-radius: 5px;
+		
+	}
+	pre.decl {
+		color: #0000ff;
+	}
+	pre.input {
+		width: 350px;
+		margin-right: 15px;
+		float: left;
+	}
+	pre.output {
+		background-color: #ccc;
+		color: #ff00ff;
+	}
+	p {
+		clear: both;
+	}
+</style>
+
+<h1>Functions</h1>
+
+<p>
+	Stencil has it's own built in <a href="expressions.html">expression</a> language designed for template processing.
+	To augment the built in functions and the methods of objects passed into Stencil you can define your own utility
+	functions right inside a template.
+</p>
+<p>
+	At first glance functions look exactly like <a href="macros.html">macros</a> but there is an important distinction.
+	Functions are code that process statement and can return values. Macros are blocks of text that are processed as
+	templates themselves. If a function doesn't return a value, calling it from an output will not output anything.
+</p>
+
+<h2>Basic</h2>
+<p>
+	Defining a function in Stencil is done with this simple syntax
+	<pre class="decl">
+	$func myFunc () {
+		return 'My Function!';
+	};
+	</pre>
+	<pre class="input">
+	$myFunc ();
+	</pre>
+	<pre class="output">
+	My Function!
+	</pre>
+</p>
+
+<h2>Parameters</h2>
+<p>
+	Parameters are specified in familiar parentheses format. Remember, Stencil is an untyped language so no
+	types are specified, just names.
+	<pre class="decl">
+	$macro myFunc ( greeting, name ) {
+		return greeting + ' ' name + '!';
+	};
+	</pre>
+	<pre class="input">
+	$myFunc('Hello','World');
+	</pre>
+	<pre class="output">
+	Hello World!
+	</pre>
+</p>
+<p>
+	Parameters can be passed by location (as in the previous example) or by name. You must choose one passing
+	method or the other. You cannot mix methods.
+	<pre class="decl">
+	$macro myFunc ( greeting, name ) {
+		return greeting + ' ' + name + '!';
+	};
+	</pre>
+	<pre class="input">
+$myFunc(greeting='Hello',name='World');
+	</pre>
+	<pre class="output">
+	Hello World!
+	</pre>
+</p>
+
+<h3>Default Values</h3>
+<p>
+	Parameters can also have default values. You simply specify an <a href="expressions.html">expression</a>
+	after the parameter name. Any parameters not passed will receive their default value or null if no
+	default was defined.
+	<pre class="decl">
+	$macro myMacro ( greeting='Hello', name ) {
+		return greeting + ' ' + name + '!';
+	};
+	</pre>
+	<pre class="input">
+	$myMacro(name='World');
+	</pre>
+	<pre class="output">
+	Hello World!
+	</pre>
+</p>
+
+<h3>Any Parameters</h3>
+<p>
+	Occasionally you would like to accept any number of parameters and process them all in your macro. This
+	is done by marking a parameter with the '*' sign.  Then you can enumerate the parameter keys/values at
+	will.
+	<pre class="decl">
+	$macro myFunc (*all) {
+		var text = '';
+		foreach entry in all {
+			text += entry.key + ' = ' + entry.value + '\n';
+		}
+	};
+	</pre>
+	<pre class="input">
+$myFunc(one='blue',two='red',three='green');
+	</pre>
+	<pre class="output">
+	one = blue;
+	two = red;
+	three = green;
+	</pre>
+</p>
+
+
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+
+<h2>Statements</h2>
+<p>
+	Functions process statements. As such they can do pretty much any imaginable thing you would like. All the available statements are described below along with an example of the associated syntax.
+</p>
+
+
+<h3>Return</h3>
+<p>
+	Exits the function immediately, returning a value to its caller
+	<pre class="decl">
+	return 10;
+	</pre>
+</p>
+
+<h3>Declaration</h3>
+<p>
+	Declares a variable in the current function scope;
+	<pre class="decl">
+	var text = '';
+	</pre>
+</p>
+
+<h3>Assignment</h3>
+<p>
+	Assigns a value to a variable. The variable must have been previously declared.
+	<pre class="decl">
+	text = 'New Value';
+	</pre>
+</p>
+
+<h3>If/Else</h3>
+<p>
+	Choose to execute one of two statements
+	<pre class="decl">
+	if value {
+		text = "this";
+	}
+	else {
+		text = "that";
+	}
+	</pre>
+</p>
+<p>
+	The else statement is optional
+	<pre class="decl">
+	if value {
+		text = "this";
+	}
+	</pre>
+</p>
+
+<h3>Foreach/Else</h3>
+<p>
+	Execute a statement once for each member of a collection
+	<pre class="decl">
+	foreach item in items {
+		x += item;
+	}
+	</pre>
+</p>
+<p>
+	An optional else statement can be provided for when the collection is empty
+	<pre class="decl">
+	foreach item in items {
+		x += item;
+	}
+	else {
+		x = 'None';
+	}
+	</pre>
+</p>
+<p>
+	An optional iteration variable can be declared that provides commonly used
+	information about the current iteration.
+	<br/>
+	The iteration variable provides the following properties:
+	<ul>
+		<li>index - iteration # starting from 0</li>
+		<li>count - iteration # starting from 1</li>
+		<li>even - true if it is an even numbered iteration</li>
+		<li>odd - true if it is an odd numbered iteration</li>
+		<li>hasNext - true if this is not the last iteration</li>
+	</ul>
+	<pre class="decl">
+	foreach item,it in items {
+		x += item.name + ' ' + it.count;
+	}
+	</pre>
+</p>
+
+<h3>While</h3>
+<p>
+	Execute a statement while a value is true
+	<pre class="decl">
+	while value < 5 {
+		value += 1;
+	}
+	</pre>
+</p>
+
+<h3>Switch/Case/Default</h3>
+<p>
+	Select one of several blocks based on a value
+	<pre class="decl">
+	switch value {
+		case 0:
+			x=5;
+		case 1:
+			x=10;
+		default:
+			x=0;
+	}
+	</pre>
+</p>
+
+<h3>With</h3>
+<p>
+	Add properties of one or more expressions to the current scope
+	<pre class="decl">
+	with stock,group {
+		x += group;	$* for group.title	*$
+		x += name;	$* for stock.name 	*$
+		x += price;	$* for stock.price 	*$
+	}
+	</pre>	
+</p>
+
+<h3>break</h3>
+<p>
+	Breaks out of the nearest loop
+	<pre>
+	while x < 10 {
+		if x == 3
+			break;
+		x += 1;
+	}
+	</pre>
+</p>
+
+<h3>continue</h3>
+<p>
+	Continues on to the next iteration of the nearest loop
+	<pre>
+	while x < 10 {
+		x += 1;
+		if x == 3
+			continue;
+		x += 3;		$* this gets skipped *$
+	}
+	</pre>
+</p>

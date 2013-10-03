@@ -1,0 +1,308 @@
+---
+layout: default
+title: Outputs - Stencil
+---
+<h1>Outputs</h1>
+
+<p>
+	The Stencil language uses the single character '$' to demarcate dynamic outputs and closes them with the ';' character.
+	All outputs take the form <pre>$&lt;command&gt;;</pre>  Each dynamic output command is detailed below.
+</p>
+
+<style>
+	pre {
+		background-color: #ddd;
+		border-radius: 5px;
+		
+	}
+	pre.input {
+		width: 350px;
+		margin-right: 15px;
+		float: left;
+	}
+	pre.output {
+		background-color: #ccc;
+		color: #ff00ff;
+	}
+	p {
+		clear: both;
+	}
+</style>
+
+<h2>expression</h2>
+<p>
+	Output the value of an expression
+	<pre class="input">
+$user.name;
+$2+2;
+	</pre>
+	<pre class="output">
+John Doe
+5
+	</pre>
+</p>
+
+<h2>if/else</h2>
+<p>
+	Conditionally output a block of text
+	<pre class="input">
+$if value {
+	value is true
+}
+	</pre>
+	<pre class="output">
+value is true
+	</pre>
+</p>
+<p>
+	An else block can be provided in case the value is false
+	<pre class="input">
+$if value {
+	value is true
+}
+else {
+	value is false
+};
+	</pre>
+	<pre class="output">
+value is false
+	</pre>
+</p>
+
+<h2>foreach/else</h2>
+<p>
+	Loop through a collection and output a block for each value
+	<pre class="input">
+$foreach item in items {
+	Color: $item.color;
+}
+	</pre>
+	<pre class="output">
+Color: Orange
+Color: Blue
+Color: Black
+	</pre>
+</p>
+<p>
+	An else block can be provided to output in case the collection is empty
+	<pre class="input">
+$foreach item in items {
+	$item.name;
+}
+else {
+	No Items
+};
+	</pre>
+	<pre class="output">
+No Items
+	</pre>
+</p>
+<p>
+	An iteration variable can be specified to get common useful information on the iteration being processed. The
+	iteration variable has these properties:
+	<ul>
+	<li>index - iteration # starting from 0</li>
+	<li>count - iteration # starting from 1</li>
+	<li>even - true if it is an even numbered iteration</li>
+	<li>odd - true if it is an odd numbered iteration</li>
+	<li>hasNext - true if this is not the last iteration</li>
+	</ul>
+	<pre class="input">
+$foreach item,it in items {
+	$it.count: $item.color;
+}
+	</pre>
+	<pre class="output">
+1: Orange
+2: Blue
+3: Black
+	</pre>
+</p>
+
+<h2>while</h2>
+<p>
+	Loop while an expression is true
+	<pre class="input">
+$white value < 5 {
+	Index: $value;
+	$assign value=value+1;
+}
+	</pre>
+	<pre class="output">
+Index: 0
+Index: 1
+Index: 2
+Index: 3
+Index: 4
+	</pre>
+</p>
+
+<h2>switch/case/default</h2>
+<p>
+Select one of several blocks based on a value
+	<pre class="input">
+$switch value
+	case 0 {
+		Number: 0
+	}
+	case 1 {
+		Number: 1
+	}
+	case 'test' {
+		Text: test
+	};
+	</pre>
+	<pre class="output">
+Text: test
+	</pre>
+</p>
+<p>
+	A default block can be provided in case the value matches none of the cases
+	<pre class="input">
+$switch value
+	case 0 {
+		Number: 0
+	}
+	case 1 {
+		Number: 1
+	}
+	default {
+		No Match
+	};
+	</pre>
+	<pre class="output">
+No Match
+	</pre>
+</p>
+
+<h2>with</h2>
+<p>
+	Add properties of one or more expressions to the current scope
+	<pre class="input">
+$with stock,group {
+	Group: $title	<< for group.title
+	Name: $name;	<< for stock.name
+	Symbol: $symbol;<< for stock.symbol
+	Price: $price;	<< for stock.price
+};
+	</pre>
+	<pre class="output">
+Group: Technology
+Name: Apple Inc.
+Symbol: AAPL
+Price: 489.56
+	</pre>
+</p>
+<p>
+	Any expression can be provided
+	<pre class="input">
+$with [1,2,3] {
+	Items: $size	<< for [].size
+};
+	</pre>
+	<pre class="output">
+Items: 3
+	</pre>
+</p>
+
+
+<h2>declare variable</h2>
+<p>
+	Declare variables in the current scope.
+	<pre class="input">
+$var x=5, y=10;
+$x; $y;
+	</pre>
+	<pre class="output">
+5 10
+	</pre>
+</p>
+
+<h2>assign variable</h2>
+<p>
+	Assign values to variables in the current scope. The variable must already be declared.
+	<pre class="input">
+$assign x=10, y=20;
+$x; $y;
+	</pre>
+	<pre class="output">
+10 20
+	</pre>
+</p>
+
+<h2>break</h2>
+<p>
+	Breaks out of the nearest loop
+	<pre class="input">
+$while x < 10 {
+	$if x == 3 {
+		$break;
+	};
+	Value: $x;
+};
+	</pre>
+	<pre class="output">
+Value: 0
+Value: 1
+Value: 2
+Value: 3
+	</pre>
+</p>
+
+<h2>continue</h2>
+<p>
+	Continues on to the next iteration of the nearest loop
+	<pre class="input">
+$while x < 3 {
+	Value: $x;
+	$continue;
+	This wont get printed
+};
+	</pre>
+	<pre class="output">
+Value: 0
+Value: 1
+Value: 2
+	</pre>
+</p>
+
+<h2><a id="include">include</a></h2>
+<p>
+	Include another template using a file path relative to the currently processing template.
+	<pre class="input">
+$include 'layout';
+	</pre>
+	<pre class="output">
+Included Text
+	</pre>
+</p>
+<p>
+	Parameters can be passed to the included template
+	<pre class="input">
+$include 'layout' (title='Top 100');
+	</pre>
+	<pre class="output">
+Title: Top 100
+	</pre>
+</p>
+<p>
+	Blocks can be passed to the included template as well
+	<pre class="input">
+$include 'layout' (title='Top 100')
+	header {
+		## HEADER ##
+	}
+	content {
+		## CONTENT ##
+	}
+	footer {
+		## FOOTER ##
+	};
+	</pre>
+	<pre class="output">
+Title: Top 100
+## HEADER ##
+## CONTENT ##
+## FOOTER ##
+	</pre>
+</p>

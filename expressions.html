@@ -1,0 +1,271 @@
+---
+layout: default
+title: Expressions - Stencil
+---
+<h1>Expressions</h1>
+
+<p>
+	Expressions for the dynamic heart of Stencil.  Expressions are used in outputs, macros 
+	and functions alike. Understanding expressions is key to harnessing the full power of
+	any template language, Stencil included.
+</p>
+<p>
+	Stencil is an untyped language. As such types never have to be provided by the author and
+	when using objects it will do its best to coerce it to the correct type.
+</p>
+
+<br/>
+<br/>
+<h2>Literals</h2>
+<p>
+	Stencil has support for basic literals like numbers and strings as well as support for
+	advanced literals like lists, maps and ranges.
+</p>
+
+<br/>
+<h3>Booleans</h3>
+<p>
+	Booleans are provided with the usual true and false keywords
+	<pre>
+		x = true;
+		y = false;
+	</pre>
+</p>
+
+<br/>
+<h3>Numbers</h3>
+<p>
+	Number are specified in Java syntax
+	<pre>
+		x = 1 		$* integer *$
+		x = 1.0		$* double *$
+	</pre>
+</p>
+<p>
+	In certain cases (when interacting with the API) you may need to specify an exact
+	type of integer or floating point value. You can use suffixes to achieve this
+	<br/>
+	<br/>
+	s = short integer, i = integer, l = long integer, f = float, d = double
+	<pre>
+		x = 1s 		$* short integer *$
+		x = 1l 		$* long integer *$
+		x = 3.0f 	$* float *$
+	</pre>	
+</p>
+
+<br/>
+<h3>Strings</h3>
+<p>
+	Strings are enclosed in single or double quotes. They are equivalent.
+	<pre>
+		'This is a string'
+		"So is this!"
+	</pre>
+</p>
+
+<br/>
+<h3>Lists</h3>
+<p>
+	Lists are created by enclosing expressions in square brackets. They can contain
+	any type of object
+	<pre>
+		[1,2,3,'four']
+	</pre>
+</p>
+
+<br/>
+<h3>Maps</h3>
+<p>
+	Maps are created by enclosing entries (name = expression) in square brackets. They can contain
+	any type of object
+	<pre>
+		[one=1,two=2,three=3]
+	</pre>
+</p>
+<p>
+	In cases where the name needs to be something other than an identifier you can use a string literal
+	<pre>
+		['item-one'=1,'item-two'=2]
+	</pre>
+</p>
+
+<br/>
+<h3>Ranges</h3>
+<p>
+	Ranges are sets of numbers. They are useful in a number of situations including when needing to
+	iterate a set of numbers (and you can't or don't want to type out the entire set).
+	<br/>
+	Ranges are specified as an inclusive..exclusive set. Meaning the ending value is not included.
+	<pre>
+		[1..4] == [1,2,3,5]
+		[5+5..5+10] == [10,11,12,13,14]
+	</pre>
+</p>
+
+<br/>
+<br/>
+<h2>Operators</h2>
+<p>
+	Expressions are used to calculate values and they offer a number of operators to do that.
+	Stencil provides all the familiar operators provided by static languages like Java as well
+	as a number of convenient operators that make life easier while evaluating templates.
+</p>
+<p>
+	While all of Stencils operators are listed below. The less common, and more interesting, ones
+	are listed first.
+</p>
+
+<h3>Navigation</h3>
+<p>
+	Like most languages Stencil uses the '.' operator to access properties of objects.
+	<pre>
+		item.name
+		item.name.length
+	</pre>
+</p>
+<h4>Safe Navigation</h4>
+<p>
+	Stencil also supports the safe navigation operator using '?.' syntax. This means that
+	if a null is encountered null is returned and any other navigation is ignored.
+	<pre>
+		item.name
+		item.name.length
+	</pre>
+</p>
+<h4>Array Navigation</h4>
+<p>
+	Array navigation is supported through the standard '[]' operator.  It can also be used to
+	access maps and object with property names that are invalid identifiers.
+	<pre>
+		item[0]
+		item['some-value']
+	</pre>
+</p>
+
+<h3>Conditionals</h3>
+
+<h4>Ternary ( x ? y : z )</h4>
+<p>
+	The ternary operator selects one of 2 values based on a condition
+	<pre>
+		value ? 'true' : 'false'
+	</pre>
+</p>
+
+<h4>Elvis ( x ?: z )</h4>
+<p>
+	A variant of the ternary operator. The Elvis operator selects the value of a variable or
+	if the value if null or false it selects a default.
+	<pre>
+		value ?: 'false'
+	</pre>
+</p>
+
+<h4>Select ( x ? z )</h4>
+<p>
+	A variant of the ternary operator. The Select operator selects a value if the condition is
+	true or null if it is false
+	<pre>
+		value ? 'true'
+	</pre>
+</p>
+
+
+<h3>Concatenation</h3>
+<h4>String Concatentation (+)</h4>
+<p>
+	When the '+' operator is applied to strings, or a string and any other type, the result is
+	the two values concatenated as strings.
+	<pre>
+		3 + ' Kings' == '3 Kings'
+	</pre>
+</p>
+
+<h4>List Concatentation (+)</h4>
+<p>
+	When the '+' operator is applied to lists, or a list and any other type, the result is
+	the values are treated as lists and joined to create a single list
+	<pre>
+		[3] + ['Kings'] == [3, 'Kings']
+		3 + ['Kings'] 	== [3, 'Kings']
+	</pre>
+</p>
+
+<h3>Basics</h3>
+<h4>Mathematical (+ - / * %)</h4>
+<p>
+	Stencil has support for the all basic and advanced mathematical operators.
+	<pre>
+		1 + 1 = 2
+		1 - 1 = 0
+		5 / 5 = 1
+		3 * 1 = 3
+		2 % 1 = 1
+	</pre>
+</p>
+
+<h4>Equality (== != < <= > >=)</h4>
+<p>
+	Stencil has support for the all standard equality operators.
+	<pre>
+		1 == 1
+		2 != 1
+	</pre>
+</p>
+
+<h4>Typing (isa instanceof)</h4>
+<p>
+	Stencil supports testing if an object is a type with the 'isa' operator. Java
+	folks can use the familiar alternative of 'instanceof' (they do the same thing).
+	<pre>
+		x isa [] 			$* test if x is a list *$
+		x instanceof []
+	</pre>
+</p>
+
+<h4>Identical (=== !==)</h4>
+<p>
+	While the equality operators test if two values are equal. The identical operator
+	tests if two objects are exactly the same object.
+	
+	API Note: The basic identity operator calls the Java Object.equals method while this
+	operator performs an object identity test (aka == in Java).
+	<pre>
+		(x === x) == true
+		(x !== x) == false
+	</pre>
+</p>
+
+<h4>Logical (&& ||)</h4>
+<p>
+	Supports the standard 'logical and' (&&) and 'logical or' (||) operators
+	<pre>
+		true && false == false
+		true || false == true
+	</pre>
+</p>
+
+<h4>Logical Negation (!)</h4>
+<p>
+	Logical negates inverts a boolean value
+	<pre>
+		!false = true
+		!true = false
+	</pre>
+</p>
+
+<h4>Bitwise (& | ^ ~)</h4>
+<p>
+	Stencil has support for the standard bitwise operators
+</p>
+
+<h4>Bit Shifting (<< >>)</h4>
+<p>
+	Stencil supports bit shifting operators
+	<pre>
+		1 << 1 == 2
+		2 >> 1 == 1
+	</pre>
+</p>
+

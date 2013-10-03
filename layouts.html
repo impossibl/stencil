@@ -1,0 +1,100 @@
+---
+layout: default
+title: Layouts - Stencil
+---
+<h1>Layouts</h1>
+<p>
+	Stencil's built in <a href="macros.html#blocks">block passing</a> syntax makes layouts simple.  You can
+	build layouts with <a href="macros.html">macros</a> or, since templates themselves are basically macros,
+	with the <a href="outputs.html#include">include</a> output.
+</p>
+
+
+<h2>Macro Layout</h2>
+<p>
+	To build a macro layout you simply define a macro
+
+	<div>layout.st</div>
+	<pre>
+	$macro myLayout(title) [header,content,footer] {
+		&lt;html&gt;
+		&lt;head&gt;
+			&lt;title&gt;$title;&lt;/title&gt;
+		&lt;/head&gt;
+		&lt;body&gt;
+			&lt;header&gt;
+				$header;
+			&lt;/header&gt;
+			&lt;div class="content"&gt;
+				$content;
+			&lt;/div&gt;
+			&lt;footer&gt;
+				$footer;
+			&lt;/footer&gt;
+		&lt;/body&gt;
+	};
+	</pre>
+
+	Then call that macro using <a href="macros.html#blocks">block passing</a> syntax from the same or different
+	file.
+	<br/>
+	<br/>
+	
+	<div>index.st</div>
+	<pre>
+	$$import 'layout.st';
+	
+	$myLayout(title='Welcome')
+		header {
+		}
+		content {
+		}
+		footer {
+		};
+	</pre>
+
+</p>
+
+
+<h2>Include Layout</h2>
+<p>
+	To build an include layout it is almost exactly the same as a macro layout except you declare a macro signature
+	for the template itself using the '$$' header syntax.
+	
+	<div>layout.st</div>
+	<pre>
+	$$(title) [header,content,footer];
+	
+	&lt;html&gt;
+	&lt;head&gt;
+		&lt;title&gt;$title;&lt;/title&gt;
+	&lt;/head&gt;
+	&lt;body&gt;
+		&lt;header&gt;
+			$header;
+		&lt;/header&gt;
+		&lt;div class="content"&gt;
+			$content;
+		&lt;/div&gt;
+		&lt;footer&gt;
+			$footer;
+		&lt;/footer&gt;
+	&lt;/body&gt;
+	</pre>	
+
+	To use the layout you simply include the layout template while passing it parameters and blocks as usual.
+	<br/>
+	<br/>
+	
+	<div>index.st</div>
+	<pre>
+	$include 'layout.st' (title='Welcome')
+		header {
+		}
+		content {
+		}
+		footer {
+		};
+	</pre>
+
+</p>

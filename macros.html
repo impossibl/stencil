@@ -182,6 +182,29 @@ $myMacro(one='blue',two='red',three='green');
 	</pre>
 </p>
 
+<h3>Double Blocks</h3>
+<p>
+	In certain cases, like when outputting Javascript or CSS, the block syntax using curly braces can
+	get in the way.  Although you can escape a curly brace with the '\{' sequence it would still be
+	troublesome to work that way. Thus Stencil supports 'Double Blocks'.
+</p>
+<p>
+	Double Blocks use '{{' to open and '}}' to close. Thus allowing the use of '{' and '}' without translation.
+	Also inside a double block you can use '$$' to begin <a href="outputs.html">dynamic outputs</a>.
+	<pre>
+		&lt;style&gt;
+			$raw &#123;{
+				h3 {
+					color: #fff;
+				}
+				div {
+					color: $$divColor;
+				}
+			&#125;}
+		&lt;/style&gt;
+	</pre>
+</p>
+
 <h3>Block Modes</h3>
 <p>
 	Sometimes just replacing the value in a block is too trivial.  A macro can provide default text for a

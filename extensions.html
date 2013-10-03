@@ -52,7 +52,7 @@ title: Extensions - Stencil
 	{% endhighlight %}
 	
 	Implement this interface is as easy as providing a list of parameters your extension will accept when called
-	and providing the functionality in the call method.
+	and providing the functionality in the call method.	
 </p>
 <p>
 	NOTE: Using the ALL_PARAM_NAME will allow you to receive any and all parameters passed to the method.
@@ -82,4 +82,45 @@ title: Extensions - Stencil
 <p>
 	NOTE: Using the UNNAMED_BLOCK_NAME will allow you to receive an unnamed block if one was passed.
 	<a href="macros.html#blocks">See Blocks</a> for more information
+</p>
+
+<h3><a id="extmethods">Extension Methods</a></h3>
+<p>
+	Stencil includes one extremely helpful that allows programmers to extend existing Java classes with new
+	methods. This allows you to provide things like your own custom date format function for all dates and use
+	it like it was defined in the original class.
+</p>
+<p>
+	To create an extension method you derive from the marker interface ExtensionMethods.
+	<br/>
+	Extension Methods Interface
+	{% highlight java %}
+	public interface ExtensionMethods {
+	}
+	{% endhighlight %}
+</p>
+
+<p>
+	Note that the ExtensionMethods interface does not require you to implement any specific methods.  Instead you
+	create static methods in your extending class.  The type of the first parameter of the static method is the Class
+	you wish to extend. Any other parameters are passed to the method when the template calls it.
+</p>
+<p>
+	For example, extending java.util.Date with a custom format function would look like this
+	{% highlight java %}
+	public class DateExtensions implements ExtensionMethods {
+		
+		public static void myFormat(java.util.Date date, String type) {
+			return myFormatter.format(date, type);
+		}
+		
+	}
+	{% endhighlight %}
+</p>
+
+<p>
+	Using your new extension method is the fun part.  You simply call it as if it was defined on the original class.
+	<pre>
+		$aDateVal.myFormat('short');
+	</pre>
 </p>

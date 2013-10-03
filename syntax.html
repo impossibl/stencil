@@ -1,0 +1,55 @@
+---
+layout: default
+title: Syntax - Stencil
+---
+<h1>Syntax</h1>
+<p>
+	Stencil's syntax is designed to reduce typing as much as possible and to feel like the
+	text and output commands are naturally woven together.
+</p>
+
+<h2>Overview</h2>
+<p>
+	All text in a Stencil template is output without modification. Only <a href="outputs.html">outputs</a> are processed
+	by the template engine.	
+</p>
+
+<p>
+	To begin a dynamic section you always use the '$' and to end it you always use the ';'.
+	
+	<pre>
+		$myVal;
+	</pre>
+</p>
+
+<p>
+	Different output commands can take "Blocks" of text to define a block you wrap it in 
+	'{' and '}'.
+	<pre>
+		$if x {
+			This text is in a block
+		};
+		
+		$if y { This text is too }
+	</pre>
+</p>
+
+<p>
+	Some commands, and user defined macros, can take more than one block.
+	<pre>
+		$if x {
+			This text is in a block
+		}
+		else {
+			A second block
+		};
+	</pre>
+</p>
+<p>
+	That's the basics!
+	<br/>
+	<br/>
+	You can read all the details about outputs, expressions, functions, macros, etc. using the
+	syntax reference at the right.
+</p>
+

@@ -18,7 +18,7 @@ public class InlineTemplateSource implements TemplateSource {
 		this.uri = URI.create("file:" + hash(text));
 	}
 	
-	String hash(String text) {
+	static String hash(String text) {
 		return Hashing.md5().hashString(text).toString();
 	}
 

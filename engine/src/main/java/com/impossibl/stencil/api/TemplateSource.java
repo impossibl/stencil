@@ -6,7 +6,7 @@ import java.io.Reader;
 import java.net.URI;
 
 /**
- * Template source information. Returned from @see TemplateSourceLoader.find
+ * Template source information. Returned from {@link TemplateSourceLoader#find(String)}
  * 
  * @author kdubb
  *

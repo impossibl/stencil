@@ -116,10 +116,10 @@ public class StencilEngine {
   }
 
   /**
-   * Enables or disables the "Complete Modification Check". @see
-   * isCompleteModificationCheck
+   * Enables or disables the "Complete Modification Check".
    * 
    * @param completeModificationCheck New value for check
+   * @see StencilEngine#isCompleteModificationCheck()
    */
   public void setCompleteModificationCheck(boolean completeModificationCheck) {
     this.completeModificationCheck = completeModificationCheck;

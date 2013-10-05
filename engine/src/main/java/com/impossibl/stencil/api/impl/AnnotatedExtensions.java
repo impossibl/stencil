@@ -13,9 +13,11 @@ import com.thoughtworks.paranamer.CachingParanamer;
 import com.thoughtworks.paranamer.Paranamer;
 
 /**
- * Utility class for handling annotated @see Callable's and @see Preparable's
+ * Utility class for handling annotated Callable's and Preparable's
  * 
  * @author kdubb
+ * @see com.impossibl.stencil.api.Callable
+ * @see com.impossibl.stencil.api.Preparable
  *
  */
 public class AnnotatedExtensions {
@@ -35,10 +37,11 @@ public class AnnotatedExtensions {
   });
 
   /**
-   * Retrieves the @see Named annotated parameter names from the given method
+   * Retrieves the Named annotated parameter names from the given method
    * 
    * @param method Method to retrieve annotated parameter names for
-   * @return Names of parameters annotated with @see Named
+   * @return Names of parameters annotated with Named
+   * @see com.impossibl.stencil.api.Named
    */
   public static String[] getParameterNames(Method method) {
     return paranamer.lookupParameterNames(method);

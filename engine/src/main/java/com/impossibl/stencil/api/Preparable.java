@@ -18,10 +18,13 @@ public interface Preparable {
   /**
    * Gets the block names this preparable will accept.
    * 
-   * Returning a single parameter name of @see ALL_BLOCK_NAME will result in
-   * the @see prepare method being invoked with all blocks passed.
+   * Returning a single parameter name of ALL_BLOCK_NAME will result in
+   * the prepare method being invoked with all blocks passed.
    * 
    * @return Array of parameter names in order
+   * @see Preparable#ALL_BLOCK_NAME
+   * @see Preparable#ALL_BLOCKS
+   * @see Preparable#prepare(Map)
    */
 	String[] getBlockNames();
 	

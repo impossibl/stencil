@@ -6,19 +6,19 @@ import java.util.Map;
 import com.impossibl.stencil.api.Callable;
 
 /**
- * Base implementation of @see Callable that automatically maps parameters to
+ * Base implementation of Callable that automatically maps parameters to
  * annotated parameters on a method named "doCall".
  * 
  * @author kdubb
- *
  */
 public abstract class AnnotatedCallableBase implements Callable {
   
   Method method;
 
   /**
-   * Examines a method named "doCall" for parameters annotated with the @see
+   * Examines a method named "doCall" for parameters annotated with the
    * Named annotation.
+   * @see com.impossibl.stencil.api.Named
    */
   public String[] getParameterNames() {
     return AnnotatedExtensions.getParameterNames(getMethod());
@@ -26,7 +26,8 @@ public abstract class AnnotatedCallableBase implements Callable {
   
   /**
    * Executes a method named "doCall" by mapping parameters by name to
-   * parameters annotated with the @see Named annotation
+   * parameters annotated with the Named annotation
+   * @see com.impossibl.stencil.api.Named
    */
   public Object call(Map<String, ?> params) throws Throwable {
     return AnnotatedExtensions.exec(getMethod(), getParameterNames(), params, this);

@@ -15,9 +15,10 @@ import com.impossibl.stencil.api.TemplateSourceLoader;
 public class URLTemplateSourceLoader implements TemplateSourceLoader {
 
   /**
-   * Maps the given path to a file URL and builds a @see URLTemplateSource for
+   * Maps the given path to a file URL and builds a URLTemplateSource for
    * it.
    * @return URLTemplateSource for the path
+   * @see URLTemplateSource
    */
   @Override
   public TemplateSource find(String path) throws IOException {

@@ -45,10 +45,6 @@
      <distribution>repo</distribution>
    </license>
   </licenses>
-  <scm>
-   <url>https://github.com/impossibl/stencil</url>
-   <connection>https://github.com/impossibl/stencil.git</connection>
-  </scm>
   <developers>
    <developer>
      <id>kdubb</id>

@@ -4,11 +4,12 @@ import java.io.IOException;
 import java.io.Writer;
 
 /**
- * Block of output commands.  Allows @see Callable and @see Preparable
+ * Block of output commands.  Allows Callable and Preparable
  * objects to retrieve the text of blocks programmatically
  * 
  * @author kdubb
- *
+ * @see Callable
+ * @see Preparable
  */
 public interface Block {
   

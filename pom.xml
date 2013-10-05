@@ -34,40 +34,12 @@
 				</configuration>
 			</plugin>
 		</plugins>
-	  <pluginManagement>
-	    <plugins>
-	      <plugin>
-	        <groupId>org.eclipse.m2e</groupId>
-	        <artifactId>lifecycle-mapping</artifactId>
-	        <version>1.0.0</version>
-	        <configuration>
-	          <lifecycleMappingMetadata>
-	            <pluginExecutions>
-	              <pluginExecution>
-	                <pluginExecutionFilter>
-	                  <groupId>org.apache.maven.plugins</groupId>
-	                  <artifactId>maven-enforcer-plugin</artifactId>
-	                  <versionRange>[1.0.0,)</versionRange>
-	                  <goals>
-	                    <goal>enforce</goal>
-	                  </goals>
-	                </pluginExecutionFilter>
-	                <action>
-	                  <ignore />
-	                </action>
-	              </pluginExecution>
-	            </pluginExecutions>
-	          </lifecycleMappingMetadata>
-	        </configuration>
-	      </plugin>
-	    </plugins>
-	  </pluginManagement>
 	</build>
 
 	<name>Stencil Template Engine Root</name>
 	<url>http://impossibl.github.io/stencil/</url>
 	<description>
-	 Stencil is a templating language to Java that makes layouts and template reuse a simple task. With support for macros, functions, and advanced expressions it's a truly useful language with a simple and elegant syntax. It has an advanced API and is suitable for use in standalone and server environments.
+    Stencil is a delightful template language with a concise syntax and advanced capabilities. It is written in Java and has an easy and advanced API that makes integrating it into any environment a breeze.
   </description>
 	<inceptionYear>2013</inceptionYear>
 	<organization>

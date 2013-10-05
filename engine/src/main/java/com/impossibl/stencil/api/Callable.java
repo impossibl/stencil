@@ -16,10 +16,12 @@ public interface Callable {
   /**
    * Gets the parameter names this callable will accept.
    * 
-   * Returning a single parameter name of @see ALL_PARAM_NAME will result in
-   * the @see call method being invoked with all parameters passed.
+   * Returning a single parameter name of ALL_PARAM_NAME will result in
+   * the call method being invoked with all parameters passed.
    * 
    * @return Array of parameter names in order
+   * @see Callable#ALL_PARAM_NAME
+   * @see Callable#call
    */
 	String[] getParameterNames();
 	

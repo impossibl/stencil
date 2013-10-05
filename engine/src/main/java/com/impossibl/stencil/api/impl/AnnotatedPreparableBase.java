@@ -7,7 +7,7 @@ import com.impossibl.stencil.api.Block;
 import com.impossibl.stencil.api.Preparable;
 
 /**
- * Base implementation of @see Preparable that automatically maps blocks to
+ * Base implementation of Preparable that automatically maps blocks to
  * annotated blocks on a method named "doPrepare".
  * 
  * @author kdubb
@@ -18,8 +18,9 @@ public abstract class AnnotatedPreparableBase implements Preparable {
   Method method;
   
   /**
-   * Examines a method named "doPrepare" for blocks annotated with the @see
+   * Examines a method named "doPrepare" for blocks annotated with the
    * Named annotation.
+   * @see com.impossibl.stencil.api.Named
    */
   public String[] getBlockNames() {
     return AnnotatedExtensions.getParameterNames(getMethod());
@@ -27,7 +28,8 @@ public abstract class AnnotatedPreparableBase implements Preparable {
     
   /**
    * Executes a method named "doPrepare" by mapping blocks by name to blocks
-   * annotated with the @see Named annotation
+   * annotated with the Named annotation
+   * @see com.impossibl.stencil.api.Named
    */
   public Object prepare(Map<String, Block> params) throws Throwable {
     return AnnotatedExtensions.exec(getMethod(), getBlockNames(), params, this);

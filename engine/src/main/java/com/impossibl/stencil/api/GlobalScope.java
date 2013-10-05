@@ -18,7 +18,8 @@ public interface GlobalScope {
    * Lookup a variable by name.
    * 
    * @param name Name of variable
-   * @return Value of variable or @see NOT_FOUND if the variable doesn't exist
+   * @return Value of variable or NOT_FOUND if the variable doesn't exist
+   * @see GlobalScope#NOT_FOUND
    */
   Object get(String name);
   

@@ -8,7 +8,7 @@ import com.impossibl.stencil.api.Callable;
 import com.impossibl.stencil.api.Preparable;
 
 /**
- * Base implementation of @see Callable and @see Preparable that automatically
+ * Base implementation of Callable and Preparable that automatically
  * maps parameters to annotated parameters on a method named "doCall" and
  * automatically maps blocks to annotated blocks on a method named "doPrepare".
  * 
@@ -21,16 +21,18 @@ public abstract class AnnotatedCallablePreparableBase implements Callable, Prepa
   Method prepareMethod;
   
   /**
-   * Examines a method named "doCall" for parameters annotated with the @see
+   * Examines a method named "doCall" for parameters annotated with the
    * Named annotation.
+   * @see com.impossibl.stencil.api.Named
    */
   public String[] getParameterNames() {
     return AnnotatedExtensions.getParameterNames(getCallMethod());
   }
   
   /**
-   * Examines a method named "doPrepare" for blocks annotated with the @see
+   * Examines a method named "doPrepare" for blocks annotated with the
    * Named annotation.
+   * @see com.impossibl.stencil.api.Named
    */
   public String[] getBlockNames() {
     return AnnotatedExtensions.getParameterNames(getPrepareMethod());
@@ -38,7 +40,8 @@ public abstract class AnnotatedCallablePreparableBase implements Callable, Prepa
 
   /**
    * Executes a method named "doCall" by mapping parameters by name to
-   * parameters annotated with the @see Named annotation
+   * parameters annotated with the Named annotation
+   * @see com.impossibl.stencil.api.Named
    */
   public Object call(Map<String, ?> params) throws Throwable {
     return AnnotatedExtensions.exec(getCallMethod(), getParameterNames(), params, this);
@@ -46,7 +49,8 @@ public abstract class AnnotatedCallablePreparableBase implements Callable, Prepa
 
   /**
    * Executes a method named "doPrepare" by mapping blocks by name to blocks
-   * annotated with the @see Named annotation
+   * annotated with the Named annotation
+   * @see com.impossibl.stencil.api.Named
    */
   public Object prepare(Map<String, Block> params) throws Throwable {
     return AnnotatedExtensions.exec(getPrepareMethod(), getParameterNames(), params, this);

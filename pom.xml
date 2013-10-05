@@ -55,7 +55,8 @@
 	</licenses>
 	<scm>
 	 <url>https://github.com/impossibl/stencil</url>
-	 <connection>https://github.com/impossibl/stencil.git</connection>
+   <connection>scm:git:git@github.com:impossibl/stencil.git</connection>
+   <developerConnection>scm:git:git@github.com:impossibl/stencil.git</developerConnection>
 	</scm>
 	<developers>
 	 <developer>

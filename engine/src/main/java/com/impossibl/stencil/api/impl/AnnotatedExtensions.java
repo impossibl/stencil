@@ -40,7 +40,7 @@ public class AnnotatedExtensions {
       }
     }
     
-    throw new ExecutionException("invalid auto-function: no doCall function declared");
+    throw new ExecutionException("invalid auto-function: no '" + name + "' method declared");
   }
 
   public static Object exec(Method method, String[] paramNames, Map<String,?> params, Object instance) throws Throwable {

@@ -47,10 +47,10 @@ public class StencilEngine {
   
   private static final ServiceLoader<GlobalScope> serviceGlobalScopes = ServiceLoader.load(GlobalScope.class);
 
-  TemplateCache cache;
-  TemplateSourceLoader sourceLoader;
-  boolean completeModificationCheck = true;
-  Iterable<GlobalScope> globalScopes = serviceGlobalScopes;
+  private TemplateCache cache;
+  private TemplateSourceLoader sourceLoader;
+  private boolean completeModificationCheck = true;
+  private Iterable<GlobalScope> globalScopes = serviceGlobalScopes;
 
   public StencilEngine() {
     this(new URLTemplateSourceLoader());
@@ -78,8 +78,8 @@ public class StencilEngine {
     return completeModificationCheck;
   }
 
-  public void setCompleteModificationCheck(boolean detectChanges) {
-    this.completeModificationCheck = detectChanges;
+  public void setCompleteModificationCheck(boolean completeModificationCheck) {
+    this.completeModificationCheck = completeModificationCheck;
   }
 
   public Iterable<GlobalScope> getGlobalScopes() {
@@ -136,9 +136,9 @@ public class StencilEngine {
     return render(loadInline(text));
   }
   
-  public String render(Template res) throws IOException {  
+  public String render(Template template) throws IOException {  
     StringWriter out = new StringWriter();
-    render(res, out);
+    render(template, out);
     return out.toString();
   }
   
@@ -191,7 +191,7 @@ public class StencilEngine {
 
 	}
 
-	boolean checkModified(String path, TemplateSource source, CachedTemplate cachedTemplate) throws IOException {
+	private boolean checkModified(String path, TemplateSource source, CachedTemplate cachedTemplate) throws IOException {
 	  
     logger.trace("checking '{}' for modification", path);
 

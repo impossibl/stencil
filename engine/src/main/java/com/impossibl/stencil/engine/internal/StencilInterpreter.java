@@ -1,5 +1,7 @@
 package com.impossibl.stencil.engine.internal;
 
+import static com.impossibl.stencil.api.Callable.ALL_PARAM_NAME;
+import static com.impossibl.stencil.api.Preparable.ALL_BLOCK_NAME;
 import static com.impossibl.stencil.engine.internal.Contexts.mode;
 import static com.impossibl.stencil.engine.internal.Contexts.name;
 import static com.impossibl.stencil.engine.internal.Contexts.value;
@@ -36,7 +38,6 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 import com.impossibl.stencil.api.Block;
 import com.impossibl.stencil.api.Callable;
@@ -419,7 +420,12 @@ public class StencilInterpreter {
           currentScope.declare(FUNC_RETURN_VAR, null);
 
           //Declare all parameters in the function's execution scope
-          currentScope.declare(parameters);
+          if(source.callSig != null && source.callSig.allDecl != null) {
+            currentScope.declare(source.callSig.allDecl.id.getText(), parameters);
+          }
+          else {
+            currentScope.declare(parameters);
+          }
 
           //Execute the function statements
           exec(source.blockStmt);
@@ -497,8 +503,37 @@ public class StencilInterpreter {
      * Binds more parameters to the block
      * @param parameters Parameters to bind to the block
      */
-    public void bind(Map<String, ?> parameters) {
-      this.parameters.putAll(parameters);
+    public void declareParams(Map<String, ?> params) {
+      
+      if(source.source.callSig != null && source.source.callSig.allDecl != null) {
+        
+        parameters.put(source.source.callSig.allDecl.id.getText(), params);
+        
+      }
+      else {
+      
+        parameters.putAll(params);
+        
+      }
+    }
+    
+    /**
+     * Binds more parameters to the block
+     * @param parameters Parameters to bind to the block
+     */
+    public void declareBlocks(Map<String, Block> blocks) {
+    
+      if (source.source.prepSig != null && source.source.prepSig.allDecl != null) {
+        
+        parameters.put(source.source.prepSig.allDecl.id.getText(), blocks);
+
+      }
+      else {
+        
+        parameters.putAll(blocks);
+        
+      }
+
     }
 
     /**
@@ -1031,15 +1066,17 @@ public class StencilInterpreter {
         
       TemplateImpl included = load(value(object.stringLit));
   
-      Map<String, Object> params, blocks;
+      Map<String, Object> params;
+      Map<String, Block> blocks;
       
       HeaderContext hdr = included.getContext().hdr;
       if(hdr.hdrSig != null) {
-        params = bind(hdr.hdrSig.callSig, object.call);
-        blocks = bind(hdr.hdrSig.prepSig, object.prep);
+        params = bindParams(hdr.hdrSig.callSig, object.call);
+        blocks = bindBlocks(hdr.hdrSig.prepSig, object.prep);
       }
       else {
-        params = blocks = Collections.emptyMap();
+        params = Collections.emptyMap();
+        blocks = Collections.emptyMap();
       }
   
       Environment prevEnv = switchEnvironment(new Environment(included.getPath(), currentEnvironment.out));
@@ -1082,9 +1119,9 @@ public class StencilInterpreter {
   
         BoundBlock boundBlock = new BoundBlock((BoundMacro) value);
   
-        Map<String, Object> boundBlocks = bind(boundBlock.source.source.prepSig, object.prep);
-  
-        boundBlock.bind(boundBlocks);
+        Map<String, Block> boundBlocks = bindBlocks(boundBlock.source.source.prepSig, object.prep);
+
+        boundBlock.declareBlocks(boundBlocks);
   
         boundBlock.exec();
   
@@ -1097,11 +1134,12 @@ public class StencilInterpreter {
         
         BoundBlock boundBlock = (BoundBlock) value;
   
-        Map<String, Object> boundBlocks = bind(boundBlock.source.source.prepSig, object.prep);
+        Map<String, Block> boundBlocks = bindBlocks(boundBlock.source.source.prepSig, object.prep);
   
-        boundBlock.bind(boundBlocks);
+        boundBlock.declareBlocks(boundBlocks);
   
         boundBlock.exec();
+        
       }
       else if (value instanceof BoundParamOutputBlock) {
         
@@ -1143,7 +1181,7 @@ public class StencilInterpreter {
           throw new RuntimeException(e);
         }
         
-        Map<String,Object> params = bind(sig, object.prep);
+        Map<String,Block> params = bindBlocks(sig, object.prep);
         
         try {
           output(function.prepare(params));
@@ -2012,9 +2050,9 @@ public class StencilInterpreter {
         BoundMacro boundMacro = (BoundMacro) source;
         BoundBlock boundBlock = new BoundBlock(boundMacro);
   
-        Map<String, Object> params = bind(boundMacro.source.callSig, inv);
+        Map<String, Object> params = bindParams(boundMacro.source.callSig, inv);
   
-        boundBlock.bind(params);
+        boundBlock.declareParams(params);
   
         return boundBlock;
   
@@ -2023,7 +2061,7 @@ public class StencilInterpreter {
   
         BoundFunction boundFunction = (BoundFunction) source;
   
-        Map<String, Object> params = bind(boundFunction.source.callSig, inv);
+        Map<String, Object> params = bindParams(boundFunction.source.callSig, inv);
   
         return boundFunction.call(params);
       }
@@ -2039,7 +2077,7 @@ public class StencilInterpreter {
           throw new RuntimeException(e);
         }
         
-        Map<String,Object> params = bind(sig, inv);
+        Map<String,Object> params = bindParams(sig, inv);
         
         try {
           return function.call(params);
@@ -2232,11 +2270,21 @@ public class StencilInterpreter {
       String[] paramNames = key.getParameterNames();
       
       CallableSignatureContext sig = new CallableSignatureContext(null, -1);
-      sig.paramDecls = new ArrayList<>();
-      
-      for(String paramName : paramNames) {
+
+      if(paramNames.length == 1 && paramNames[0].equals(ALL_PARAM_NAME)) {
         
-        sig.paramDecls.add(Contexts.createParameterDecl(sig, paramName, paramName.equals("*")));
+        sig.allDecl = Contexts.createAllParameterDecl(sig, ALL_PARAM_NAME);
+        
+      }
+      else {
+        
+        sig.paramDecls = new ArrayList<>();
+        
+        for(String paramName : paramNames) {
+          
+          sig.paramDecls.add(Contexts.createParameterDecl(sig, paramName));
+        }
+        
       }
       
       return sig;
@@ -2251,11 +2299,21 @@ public class StencilInterpreter {
       String[] blockNames = key.getBlockNames();
       
       PrepareSignatureContext sig = new PrepareSignatureContext(null, -1);
-      sig.blockDecls = new ArrayList<>();
       
-      for(String blockName : blockNames) {
+      if(blockNames.length == 1 && blockNames[0].equals(ALL_BLOCK_NAME)) {
         
-        sig.blockDecls.add(Contexts.createBlockDecl(sig, blockName, blockName.equals("*"), blockName.equals("+")));
+        sig.allDecl = Contexts.createAllBlockDecl(sig, ALL_BLOCK_NAME);
+      
+      }
+      else {
+        
+        sig.blockDecls = new ArrayList<>();
+        
+        for(String blockName : blockNames) {
+          
+          sig.blockDecls.add(Contexts.createBlockDecl(sig, blockName, blockName.equals("*"), blockName.equals("+")));
+        }
+        
       }
       
       return sig;
@@ -2380,48 +2438,63 @@ public class StencilInterpreter {
    * @param inv Invocation of call
    * @return Map of String => Object representing call parameters
    */
-  private Map<String, Object> bind(CallableSignatureContext sig, CallableInvocationContext inv) throws ExecutionException {
+  private Map<String, Object> bindParams(CallableSignatureContext sig, CallableInvocationContext inv) throws ExecutionException {
     
     if(inv == null) {
       return Collections.emptyMap();
     }
 
-    Map<String, Object> vals = Maps.newHashMap();
+    Map<String, Object> vals;
+    
+    if (sig.allDecl != null) {
 
-    if (inv.posParams != null) {
-
-      //
-      // Ensure legality of call
-      //
-
-      // Can only use positional or named; not both
-      if (inv.namedParams != null) {
-        throw new InvocationException("only positional or named parameters are allowed", getLocation(inv));
+      //Load all parameters
+      
+      if (inv.posParams != null) {
+        
+        vals = mapValues(inv.posParams.exprs);
+        
       }
-
-      //
-      // Match up parameters
-      //
-
-      Iterator<ParameterDeclContext> paramDeclIter = sig.paramDecls.iterator();
-      Iterator<ExpressionContext> paramExprIter = inv.posParams.exprs.iterator();
-
-      while (paramDeclIter.hasNext()) {
-
-        ParameterDeclContext paramDecl = paramDeclIter.next();
+      else if (inv.namedParams != null) {
         
-        String paramName = name(paramDecl);
+        vals = mapNamedValues(inv.namedParams.namedValues);
         
-        //Is this an "all" parameters decl
-        if(paramDecl.flag != null && "*".equals(paramDecl.flag.getText())) {
-          
-          Map<String,Object> allParams = mapValues(inv.posParams.exprs);
-          
-          vals.put(paramName, allParams);
-          
+      }
+      else {
+      
+        throw new ExecutionException("invalid callable signature");
+        
+      }
+      
+    }
+    else {
+      
+      vals = new HashMap<>();
+      
+      if (inv.posParams != null) {
+  
+        //
+        // Ensure legality of call
+        //
+  
+        // Can only use positional or named; not both
+        if (inv.namedParams != null) {
+          throw new InvocationException("only positional or named parameters are allowed", getLocation(inv));
         }
-        else {
-
+  
+        //
+        // Match up parameters
+        //
+  
+        Iterator<ParameterDeclContext> paramDeclIter = sig.paramDecls.iterator();
+        Iterator<ExpressionContext> paramExprIter = inv.posParams.exprs.iterator();
+  
+        while (paramDeclIter.hasNext()) {
+  
+          ParameterDeclContext paramDecl = paramDeclIter.next();
+          
+          String paramName = name(paramDecl);
+          
           // Find expression (or use default)
           ExpressionContext paramExpr = paramExprIter.hasNext() ? paramExprIter.next() : paramDecl.expr;
   
@@ -2429,60 +2502,49 @@ public class StencilInterpreter {
           Object paramVal = eval(paramExpr);
   
           vals.put(paramName, paramVal);
-        }
-        
-      }
-
-    }
-    else if (inv.namedParams != null) {
-
-      //
-      // Ensure legality of call
-      //
-
-      // Can only use positional or named; not both
-      if (inv.posParams != null) {
-        throw new InvocationException("only positional or named parameters are allowed", getLocation(inv));
-      }
-
-      //
-      // Load parameters
-      //
-
-      List<NamedValueContext> namedParameters = inv.namedParams.namedValues;
-      Iterator<ParameterDeclContext> paramDeclIter = sig.paramDecls.iterator();
-
-      while (paramDeclIter.hasNext()) {
-
-        ParameterDeclContext paramDecl = paramDeclIter.next();
-        
-        String paramName = name(paramDecl);
-
-        //Is this an "all" parameters decl
-        if(paramDecl.flag != null && "*".equals(paramDecl.flag.getText())) {
-          
-          //Map all named parameters
-          Map<String,Object> allParams = mapNamedValues(namedParameters);
-          
-          //Assign all parameters
-          vals.put(paramName, allParams);
           
         }
-        else {
-
+  
+      }
+      else if (inv.namedParams != null) {
+  
+        //
+        // Ensure legality of call
+        //
+  
+        // Can only use positional or named; not both
+        if (inv.posParams != null) {
+          throw new InvocationException("only positional or named parameters are allowed", getLocation(inv));
+        }
+  
+        //
+        // Load parameters
+        //
+  
+        List<NamedValueContext> namedParameters = inv.namedParams.namedValues;
+        Iterator<ParameterDeclContext> paramDeclIter = sig.paramDecls.iterator();
+  
+        while (paramDeclIter.hasNext()) {
+  
+          ParameterDeclContext paramDecl = paramDeclIter.next();
+          
+          String paramName = name(paramDecl);
+  
           // Find expression
           ExpressionContext paramExpr = findValue(namedParameters, paramName);
-
+  
           // Assign default (is needed)
           paramExpr = paramExpr != null ? paramExpr : paramDecl.expr;
-
+  
           // Evaluate expression -> value
           Object paramVal = eval(paramExpr);
-
+  
           vals.put(paramName, paramVal);
+          
         }
+  
       }
-
+      
     }
 
     return vals;
@@ -2495,66 +2557,69 @@ public class StencilInterpreter {
    * @param inv Invocation of output block
    * @return Map of Name => BoundParamBlocks representing Macro blocks
    */
-  private Map<String, Object> bind(PrepareSignatureContext sig, PrepareInvocationContext inv) {
+  private Map<String, Block> bindBlocks(PrepareSignatureContext sig, PrepareInvocationContext inv) {
 
     if(inv == null) {
       return Collections.emptyMap();
     }
 
-    Map<String, Object> blocks = new HashMap<>();
-
-    for (BlockDeclContext blockDecl : sig.blockDecls) {
+    Map<String, Block> blocks = new HashMap<>();
+    
+    if(sig.allDecl != null) {
       
-      if(blockDecl.flag != null && "*".equals(blockDecl.flag.getText())) {
-
-        //Load all blocks passed into variable
-        
-        Map<String,BoundParamOutputBlock> boundBlocks = new HashMap<>();
-        
-        if(inv.unnamedBlock != null) {
-          boundBlocks.put("", new BoundParamOutputBlock(inv.unnamedBlock, value(inv.unnamedBlock.blockMode), currentScope));
-        }
-        
-        for(NamedOutputBlockContext paramBlock : inv.namedBlocks) {
-          
-          boundBlocks.put(name(paramBlock), new BoundParamOutputBlock(paramBlock, value(paramBlock.blockMode), currentScope));
-          
-        }
-        
-        blocks.put(name(blockDecl), boundBlocks);
-
+      //Load all blocks passed
+      
+      if(inv.unnamedBlock != null) {
+        blocks.put("", new BoundParamOutputBlock(inv.unnamedBlock, value(inv.unnamedBlock.blockMode), currentScope));
       }
-      else {
+      
+      for(NamedOutputBlockContext paramBlock : inv.namedBlocks) {
         
-        //Find the block
+        blocks.put(name(paramBlock), new BoundParamOutputBlock(paramBlock, value(paramBlock.blockMode), currentScope));
         
-        ParserRuleContext paramBlock;
+      }
+      
+    }
+    else {
+
+      for (BlockDeclContext blockDecl : sig.blockDecls) {
         
-        if(blockDecl.flag != null && "+".equals(blockDecl.flag.getText())) {
-          //Flagged to denote the "unnamed" block
-          paramBlock = inv.unnamedBlock;
+        if(blockDecl.flag != null && "*".equals(blockDecl.flag.getText())) {
+  
         }
         else {
-          //Lookup simply by name
-          paramBlock = findBlock(inv.namedBlocks, name(blockDecl));
+          
+          //Find the block
+          
+          ParserRuleContext paramBlock;
+          
+          if(blockDecl.flag != null && "+".equals(blockDecl.flag.getText())) {
+            //Flagged to denote the "unnamed" block
+            paramBlock = inv.unnamedBlock;
+          }
+          else {
+            //Lookup simply by name
+            paramBlock = findBlock(inv.namedBlocks, name(blockDecl));
+          }
+          
+          //Bind the block
+          
+          BoundParamOutputBlock boundBlock;
+    
+          if (paramBlock != null) {
+            //Simply bind with found block
+            boundBlock = new BoundParamOutputBlock(paramBlock, mode(paramBlock), currentScope);
+          }
+          else {
+            //Couldn't find a block with the declared name so we bind a 
+            //"null" block with mode "AFTER" to ensure default is used
+            boundBlock = new BoundParamOutputBlock(ParamOutputBlockMode.After, currentScope);
+          }
+    
+          blocks.put(name(blockDecl), boundBlock);
         }
-        
-        //Bind the block
-        
-        BoundParamOutputBlock boundBlock;
-  
-        if (paramBlock != null) {
-          //Simply bind with found block
-          boundBlock = new BoundParamOutputBlock(paramBlock, mode(paramBlock), currentScope);
-        }
-        else {
-          //Couldn't find a block with the declared name so we bind a 
-          //"null" block with mode "AFTER" to ensure default is used
-          boundBlock = new BoundParamOutputBlock(ParamOutputBlockMode.After, currentScope);
-        }
-  
-        blocks.put(name(blockDecl), boundBlock);
       }
+      
     }
 
     return blocks;

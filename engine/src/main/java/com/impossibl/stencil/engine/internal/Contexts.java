@@ -9,6 +9,8 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 import com.impossibl.stencil.engine.parsing.ParamOutputBlockMode;
 import com.impossibl.stencil.engine.parsing.StencilParser;
+import com.impossibl.stencil.engine.parsing.StencilParser.AllBlockDeclContext;
+import com.impossibl.stencil.engine.parsing.StencilParser.AllParameterDeclContext;
 import com.impossibl.stencil.engine.parsing.StencilParser.BlockDeclContext;
 import com.impossibl.stencil.engine.parsing.StencilParser.BooleanLiteralContext;
 import com.impossibl.stencil.engine.parsing.StencilParser.CallableSignatureContext;
@@ -197,17 +199,22 @@ public class Contexts {
     return sig;
   }
   
-  public static ParameterDeclContext createParameterDecl(ParserRuleContext parent, String name, boolean all) {
+  public static ParameterDeclContext createParameterDecl(ParserRuleContext parent, String name) {
 
     ParameterDeclContext paramDecl = new ParameterDeclContext(parent,-1);
-    
-    if(all) {
-      paramDecl.flag = createToken(StencilParser.MUL, "*");
-    }
     
     paramDecl.id = createToken(StencilParser.ID, name);
     
     return paramDecl;
+  }
+  
+  public static AllParameterDeclContext createAllParameterDecl(ParserRuleContext parent, String name) {
+    
+    AllParameterDeclContext allParamDecl = new AllParameterDeclContext(parent, -1);
+    
+    allParamDecl.id = createToken(StencilParser.ID, name);
+    
+    return allParamDecl;
   }
   
   public static BlockDeclContext createBlockDecl(ParserRuleContext parent, String name, boolean all, boolean unnamed) {
@@ -224,6 +231,15 @@ public class Contexts {
     blockDecl.id = createToken(StencilParser.ID, name);
     
     return blockDecl;
+  }
+  
+  public static AllBlockDeclContext createAllBlockDecl(ParserRuleContext parent, String name) {
+    
+    AllBlockDeclContext allBlockDecl = new AllBlockDeclContext(parent, -1);
+    
+    allBlockDecl.id = createToken(StencilParser.ID, name);
+    
+    return allBlockDecl;
   }
   
   public static Token createToken(int ttype, String text) {

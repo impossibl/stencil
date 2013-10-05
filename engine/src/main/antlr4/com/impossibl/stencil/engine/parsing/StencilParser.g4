@@ -334,21 +334,30 @@ qualifiedName:
 
 
 callableSignature:
-	PAREN_OPEN (paramDecls+=parameterDecl (COMMA paramDecls+=parameterDecl)*)? PAREN_CLOSE
+  	PAREN_OPEN (paramDecls+=parameterDecl (COMMA paramDecls+=parameterDecl)*)? PAREN_CLOSE
+  | PAREN_OPEN allDecl=allParameterDecl PAREN_CLOSE
 ;
 
 parameterDecl:
 		id=ID (EQL_ASSIGN expr=expression)?
-	| flag=MUL id=ID
+;
+
+allParameterDecl:
+  MUL id=ID
 ;
 
 
 prepareSignature:
-	SQUARE_OPEN (blockDecls+=blockDecl (COMMA blockDecls+=blockDecl)*)? SQUARE_CLOSE
+    SQUARE_OPEN (blockDecls+=blockDecl (COMMA blockDecls+=blockDecl)*)? SQUARE_CLOSE
+  | SQUARE_OPEN allDecl=allBlockDecl SQUARE_CLOSE
 ;
 
 blockDecl:
-	flag=(MUL|ADD)? id=ID
+	(flag=ADD)? id=ID
+;
+
+allBlockDecl:
+  MUL id=ID
 ;
 
 

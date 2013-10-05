@@ -22,8 +22,8 @@ public class URLTemplateSource implements TemplateSource {
   
   URL url;
   URLConnection urlConnection;
-  Cache<String,String> md5Cache = CacheBuilder.newBuilder().build();
-  
+  private static Cache<String,String> md5Cache = CacheBuilder.newBuilder().build();
+
   public URLTemplateSource(URL url) {
     this.url = url;
   }

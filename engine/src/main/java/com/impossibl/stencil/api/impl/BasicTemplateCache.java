@@ -7,14 +7,34 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.impossibl.stencil.api.TemplateCache;
 
+/**
+ * Basic template cache that allows entries to expire after a given # of
+ * seconds.
+ * 
+ * @author kdubb
+ *
+ */
 public class BasicTemplateCache implements TemplateCache {
   
   Cache<URI,CachedTemplate> cache;
 
+  /**
+   * Construct template cache that expires after a certain number of seconds.
+   * 
+   * @param cacheDurationSeconds # of second to elapse before entries expire
+   */
   public BasicTemplateCache(int cacheDurationSeconds) {
     this(cacheDurationSeconds, TimeUnit.SECONDS);
   }
 
+  /**
+   * Construct template cache that expires after a certain amount of time.
+   * 
+   * @param cacheDuration # of cacheDurationUnits to elapse before entries 
+   *        expire
+   * @param cacheDurationUnit Unit of time specified in cacheDuration
+   *        parameter
+   */
   public BasicTemplateCache(int cacheDuration, TimeUnit cacheDurationUnit) {
     cache = CacheBuilder.newBuilder().expireAfterWrite(cacheDuration, cacheDurationUnit).build();    
   }

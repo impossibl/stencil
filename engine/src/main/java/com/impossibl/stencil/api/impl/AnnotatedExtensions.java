@@ -12,6 +12,12 @@ import com.thoughtworks.paranamer.AnnotationParanamer;
 import com.thoughtworks.paranamer.CachingParanamer;
 import com.thoughtworks.paranamer.Paranamer;
 
+/**
+ * Utility class for handling annotated @see Callable's and @see Preparable's
+ * 
+ * @author kdubb
+ *
+ */
 public class AnnotatedExtensions {
 
   private static Paranamer paranamer = new CachingParanamer(new AnnotationParanamer() {
@@ -28,10 +34,23 @@ public class AnnotatedExtensions {
     
   });
 
+  /**
+   * Retrieves the @see Named annotated parameter names from the given method
+   * 
+   * @param method Method to retrieve annotated parameter names for
+   * @return Names of parameters annotated with @see Named
+   */
   public static String[] getParameterNames(Method method) {
     return paranamer.lookupParameterNames(method);
   }
   
+  /**
+   * Finds a named declared method on the given class.
+   * 
+   * @param name Name of declared method to retrieve
+   * @param cls Class to retrieve method from
+   * @return Named method on class
+   */
   public static Method findMethod(String name, Class<?> cls) {
     
     for(Method method : cls.getDeclaredMethods()) {
@@ -43,6 +62,17 @@ public class AnnotatedExtensions {
     throw new ExecutionException("invalid auto-function: no '" + name + "' method declared");
   }
 
+  /**
+   * Invokes the given method mapping named parameters to positions based on a
+   * given list of parameter names.
+   * 
+   * @param method Method to invoke
+   * @param paramNames Positioned list of parameter names to map direct mapping
+   * @param params Named parameters to use
+   * @param instance Instance to invoke method on
+   * @return Result of method invocation
+   * @throws Throwable
+   */
   public static Object exec(Method method, String[] paramNames, Map<String,?> params, Object instance) throws Throwable {
     
     Object[] paramValues = new Object[paramNames.length];

@@ -18,12 +18,26 @@ import com.google.common.hash.Hashing;
 import com.google.common.io.ByteStreams;
 import com.impossibl.stencil.api.TemplateSource;
 
+/**
+ * Template source based on any URL.
+ * 
+ * Uses either the ETAG header of the URL it builds, and caches, an MD5 for the
+ * URL.
+ * 
+ * @author kdubb
+ *
+ */
 public class URLTemplateSource implements TemplateSource {
   
   URL url;
   URLConnection urlConnection;
   private static Cache<String,String> md5Cache = CacheBuilder.newBuilder().build();
 
+  /**
+   * Constructs a template source for the given url
+   * 
+   * @param url
+   */
   public URLTemplateSource(URL url) {
     this.url = url;
   }
@@ -43,6 +57,10 @@ public class URLTemplateSource implements TemplateSource {
     return new InputStreamReader(url.openStream(), StandardCharsets.UTF_8);
   }
 
+  /**
+   * Gets the tag using either the ETAG header of the URL connection or
+   * calculates it and caches it based on the URL & last modified date
+   */
   @Override
   public String getTag() throws IOException {
 

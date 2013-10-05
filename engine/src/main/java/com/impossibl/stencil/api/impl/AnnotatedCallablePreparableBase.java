@@ -7,27 +7,56 @@ import com.impossibl.stencil.api.Block;
 import com.impossibl.stencil.api.Callable;
 import com.impossibl.stencil.api.Preparable;
 
+/**
+ * Base implementation of @see Callable and @see Preparable that automatically
+ * maps parameters to annotated parameters on a method named "doCall" and
+ * automatically maps blocks to annotated blocks on a method named "doPrepare".
+ * 
+ * @author kdubb
+ *
+ */
 public abstract class AnnotatedCallablePreparableBase implements Callable, Preparable {
   
   Method callMethod;
   Method prepareMethod;
   
+  /**
+   * Examines a method named "doCall" for parameters annotated with the @see
+   * Named annotation.
+   */
   public String[] getParameterNames() {
     return AnnotatedExtensions.getParameterNames(getCallMethod());
   }
   
+  /**
+   * Examines a method named "doPrepare" for blocks annotated with the @see
+   * Named annotation.
+   */
   public String[] getBlockNames() {
     return AnnotatedExtensions.getParameterNames(getPrepareMethod());
   }
 
+  /**
+   * Executes a method named "doCall" by mapping parameters by name to
+   * parameters annotated with the @see Named annotation
+   */
   public Object call(Map<String, ?> params) throws Throwable {
     return AnnotatedExtensions.exec(getCallMethod(), getParameterNames(), params, this);
   }
 
+  /**
+   * Executes a method named "doPrepare" by mapping blocks by name to blocks
+   * annotated with the @see Named annotation
+   */
   public Object prepare(Map<String, Block> params) throws Throwable {
     return AnnotatedExtensions.exec(getPrepareMethod(), getParameterNames(), params, this);
   }
 
+  /**
+   * Lookup a cached method named "doCall".
+   * 
+   * @return Cached "doCall" method
+   */
   public Method getCallMethod() {
     
     if(callMethod == null) {
@@ -37,6 +66,11 @@ public abstract class AnnotatedCallablePreparableBase implements Callable, Prepa
     return callMethod;
   }
 
+  /**
+   * Lookup a cached method named "doPrepare".
+   * 
+   * @return Cached "doPrepare" method
+   */
   public Method getPrepareMethod() {
     
     if(prepareMethod == null) {

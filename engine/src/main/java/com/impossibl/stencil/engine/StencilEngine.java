@@ -41,6 +41,12 @@ import com.impossibl.stencil.engine.parsing.StencilParser.ImporterContext;
 import com.impossibl.stencil.engine.parsing.StencilParser.TemplateContext;
 import com.impossibl.stencil.engine.parsing.StencilParser.TemplateImporterContext;
 
+/**
+ * Loading and rendering templates
+ * 
+ * @author kdubb
+ *
+ */
 public class StencilEngine {
 	
   private static final Logger logger = LogManager.getLogger(StencilEngine.class);
@@ -52,96 +58,255 @@ public class StencilEngine {
   private boolean completeModificationCheck = true;
   private Iterable<GlobalScope> globalScopes = serviceGlobalScopes;
 
+  /**
+   * Constructs engine with default source loader and cache
+   */
   public StencilEngine() {
     this(new URLTemplateSourceLoader());
   }
   
+  /**
+   * Constructs engine with given source loader and default cache
+   * 
+   * @param templateSourceLoader Template source loader
+   */
   public StencilEngine(TemplateSourceLoader templateSourceLoader) {
     this(templateSourceLoader, new BasicTemplateCache(Integer.MAX_VALUE));
   }
   
+  /**
+   * Constructs engine with given source loader and given cache
+   * 
+   * @param templateSourceLoader Template source loader
+   * @param templateCache Template cache
+   */
   public StencilEngine(TemplateSourceLoader templateSourceLoader, TemplateCache templateCache) {
     this.cache = templateCache;
     this.sourceLoader = templateSourceLoader;
   }
   
-  
+  /**
+   * Gets template cache
+   * 
+   * @return Template cache
+   */
   public TemplateCache getCache() {
     return cache;
   }
 
+  /**
+   * Sets the template cache
+   * 
+   * @param cache New template cache
+   */
   public void setCache(TemplateCache cache) {
     this.cache = cache;
   }
 
+  /**
+   * Determines if the "Complete Modification Check" is enabled
+   * 
+   * The "Complete Modification Check" checks imported and included templates
+   * for modification when checking a template form modification.
+   * 
+   * @return True if check is enabled, false otherwise
+   */
   public boolean isCompleteModificationCheck() {
     return completeModificationCheck;
   }
 
+  /**
+   * Enables or disables the "Complete Modification Check". @see
+   * isCompleteModificationCheck
+   * 
+   * @param completeModificationCheck New value for check
+   */
   public void setCompleteModificationCheck(boolean completeModificationCheck) {
     this.completeModificationCheck = completeModificationCheck;
   }
 
+  /**
+   * Gets the active global scopes
+   * 
+   * @return Active global scopes
+   */
   public Iterable<GlobalScope> getGlobalScopes() {
     return globalScopes;
   }
 
+  /**
+   * Sets the active global scopes
+   * 
+   * @param globalScopes New active global scopes
+   */
   public void setGlobalScopes(Iterable<GlobalScope> globalScopes) {
     this.globalScopes = Lists.newArrayList(Iterables.concat(globalScopes, serviceGlobalScopes));
   }
 
+  /**
+   * Renders template loaded from the given path with provided parameters to
+   * the given character stream.
+   * 
+   * @param path Path to load template from
+   * @param parameters Parameters to pass to template
+   * @param out Character stream to write to
+   * @throws IOException
+   * @throws ParseException
+   */
   public void render(String path, Map<String, Object> parameters, Writer out) throws IOException, ParseException {
   	render(load(path), parameters, out);
   }
   
+  /**
+   * Renders given text with the provided parameters to the given character
+   * stream.
+   * 
+   * @param text Template text to render
+   * @param parameters Parameters to pass to template
+   * @param out Character stream to write to
+   * @throws IOException
+   * @throws ParseException
+   */
   public void renderInline(String text, Map<String, Object> parameters, Writer out) throws IOException, ParseException {
     render(loadInline(text), parameters, out);
   }
   
+  /**
+   * Renders given template with provided parameters to the given character
+   * stream.
+   * 
+   * @param template Previously loaded template to render
+   * @param parameters Parameters to pass to template
+   * @param out Character stream to write to
+   * @throws IOException
+   */
   public void render(Template template, Map<String, Object> parameters, Writer out) throws IOException {
     newInterpreter().declare(parameters).process((TemplateImpl) template, out);
   }
 	  
+  /**
+   * Readers template loaded from the given path to the given character
+   * stream.
+   * 
+   * @param path Path to load template from
+   * @param out Character stream to write to
+   * @throws IOException
+   * @throws ParseException
+   */
   public void render(String path, Writer out) throws IOException, ParseException {
     render(load(path), out);
   }
 	  
+  /**
+   * Renders provided text with the provided parameters to the given character
+   * stream.
+   * 
+   * @param text Template text to render
+   * @param out Character stream to write to
+   * @throws IOException
+   * @throws ParseException
+   */
   public void renderInline(String text, Writer out) throws IOException, ParseException {
     render(loadInline(text), out);
   }
   
+  /**
+   * Renders given template to the given character stream.
+   * 
+   * @param template Previously loaded template to render
+   * @param out Character stream to write to
+   * @throws IOException
+   */
   public void render(Template template, Writer out) throws IOException {
     newInterpreter().process((TemplateImpl) template, out);
   }
 
+  /**
+   * Renders template loaded from path with the provided parameters and returns
+   * the rendered text.
+   * 
+   * @param path Path to load template from
+   * @param parameters Parameters to pass to template
+   * @return Rendered text
+   * @throws IOException
+   * @throws ParseException
+   */
   public String render(String path, Map<String, Object> parameters) throws IOException, ParseException {
     return render(load(path), parameters);
   }
   
+  /**
+   * Renders given text with provided parameters and returns rendered text.
+   * 
+   * @param text Template text to render
+   * @param parameters Parameters to pass to template
+   * @return Rendered text
+   * @throws IOException
+   * @throws ParseException
+   */
   public String renderInline(String text, Map<String, Object> parameters) throws IOException, ParseException {
     return render(loadInline(text), parameters);
   }
   
+  /**
+   * Renders given template with the provided parameters and returns the
+   * rendered text.
+   * 
+   * @param template Previously loaded template to render
+   * @param parameters Parameters to pass to template
+   * @return Rendered text
+   * @throws IOException
+   */
   public String render(Template template, Map<String, Object> parameters) throws IOException {  
     StringWriter out = new StringWriter();
     render(template, parameters, out);
     return out.toString();
   }
   
+  /**
+   * Renders template loaded from path and returns rendered text.
+   * 
+   * @param path Path to load template from
+   * @return Rendered text
+   * @throws IOException
+   * @throws ParseException
+   */
   public String render(String path) throws IOException, ParseException {
     return render(load(path));
   }
   
+  /**
+   * Renders given text and returns rendered text.
+   * 
+   * @param text Template text to render
+   * @return Rendered text
+   * @throws IOException
+   * @throws ParseException
+   */
   public String renderInline(String text) throws IOException, ParseException {
     return render(loadInline(text));
   }
   
+  /**
+   * Renders given template and returns rendered text.
+   * 
+   * @param template Previously loaded template to render
+   * @return Rendered text
+   * @throws IOException
+   */
   public String render(Template template) throws IOException {  
     StringWriter out = new StringWriter();
     render(template, out);
     return out.toString();
   }
   
+  /**
+   * Loads the given text as a template
+   * @param text Template text
+   * @return Loaded template
+   * @throws IOException
+   * @throws ParseException
+   */
   public Template loadInline(String text) throws IOException, ParseException {
     
 		try(InlineTemplateSource templateSource = new InlineTemplateSource(text)) {
@@ -151,6 +316,14 @@ public class StencilEngine {
 		
   }
   
+  /**
+   * Loads a template from the given path
+   * 
+   * @param path Path to load template from
+   * @return Loaded template
+   * @throws IOException
+   * @throws ParseException
+   */
   public Template load(String path) throws IOException, ParseException {
   	
     try(TemplateSource source = sourceLoader.find(path)) {

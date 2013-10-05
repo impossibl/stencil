@@ -8,6 +8,13 @@ import java.net.URI;
 import com.google.common.hash.Hashing;
 import com.impossibl.stencil.api.TemplateSource;
 
+/**
+ * Template source that holds the source text passed in inside the source
+ * object itself. 
+ * 
+ * @author kdubb
+ *
+ */
 public class InlineTemplateSource implements TemplateSource {
 	
 	URI uri;
@@ -18,6 +25,12 @@ public class InlineTemplateSource implements TemplateSource {
 		this.uri = URI.create("file:" + hash(text));
 	}
 	
+	/**
+	 * Get MD5 hash of the source text
+	 * 
+	 * @param text Source text to hash
+	 * @return MD5 hash of the source text
+	 */
 	static String hash(String text) {
 		return Hashing.md5().hashString(text).toString();
 	}

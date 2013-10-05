@@ -334,7 +334,7 @@ public class StencilInterpreter {
       for(GlobalScope globalScope : globalScopes) {
         
         Object val = globalScope.get(name);
-        if(val != null)
+        if(val != GlobalScope.NOT_FOUND)
           return val;
         
       }

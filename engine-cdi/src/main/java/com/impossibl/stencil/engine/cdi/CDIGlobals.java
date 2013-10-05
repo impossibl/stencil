@@ -27,7 +27,7 @@ public class CDIGlobals implements GlobalScope {
     
     Set<Bean<?>> beans = beanManager.getBeans(name);
     if(beans.isEmpty()) {
-      return null;
+      return NOT_FOUND;
     }
     
     Bean<?> bean = beanManager.resolve(beans);

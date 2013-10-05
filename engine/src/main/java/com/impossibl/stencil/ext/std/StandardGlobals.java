@@ -25,6 +25,9 @@ public class StandardGlobals implements GlobalScope {
     Object val = globals.get(name);
     if(val == null) {
       val = getType(name);
+      if(val == null) {
+        return NOT_FOUND;
+      }
     }
     return val;
   }

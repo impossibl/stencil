@@ -1,0 +1,6 @@
+com.impossibl.stencil.api
+com.impossibl.stencil.api.impl
+com.impossibl.stencil.engine
+com.impossibl.stencil.engine.internal
+com.impossibl.stencil.engine.parsing
+com.impossibl.stencil.ext.std

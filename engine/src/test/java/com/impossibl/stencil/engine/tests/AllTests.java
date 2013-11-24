@@ -34,8 +34,15 @@ import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
 @SuiteClasses({
-  ExpressionTest.class, MacroTest.class, OutputTest.class, StatementTest.class, HtmlExtensionMethodsTest.class,
-  ImportTest.class, CommentTest.class, ErrorTest.class, FunctionTest.class})
+  ExpressionTest.class,
+  MacroTest.class,
+  OutputTest.class,
+  StatementTest.class,
+  HtmlExtensionMethodsTest.class,
+  ImportTest.class,
+  CommentTest.class,
+  ErrorTest.class,
+  FunctionTest.class})
 public class AllTests {
 
 }

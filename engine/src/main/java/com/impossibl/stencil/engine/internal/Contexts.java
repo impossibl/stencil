@@ -29,6 +29,7 @@ import com.impossibl.stencil.engine.parsing.StencilParser.ParameterDeclContext;
 import com.impossibl.stencil.engine.parsing.StencilParser.SafeMemberSelectorContext;
 import com.impossibl.stencil.engine.parsing.StencilParser.SimpleNameContext;
 import com.impossibl.stencil.engine.parsing.StencilParser.StringLiteralContext;
+import com.impossibl.stencil.engine.parsing.StencilParser.UnnamedBlockDeclContext;
 import com.impossibl.stencil.engine.parsing.StencilParser.UnnamedOutputBlockContext;
 import com.impossibl.stencil.engine.parsing.StencilParser.VariableDeclContext;
 import com.impossibl.stencil.engine.parsing.StencilParser.VariableRefContext;
@@ -217,20 +218,22 @@ public class Contexts {
     return allParamDecl;
   }
   
-  public static BlockDeclContext createBlockDecl(ParserRuleContext parent, String name, boolean all, boolean unnamed) {
+  public static BlockDeclContext createBlockDecl(ParserRuleContext parent, String name) {
 
     BlockDeclContext blockDecl = new BlockDeclContext(parent,-1);
-    
-    if(all) {
-      blockDecl.flag = createToken(StencilParser.MUL, "*");
-    }
-    if(unnamed) {
-      blockDecl.flag = createToken(StencilParser.ADD, "+");
-    }
     
     blockDecl.id = createToken(StencilParser.ID, name);
     
     return blockDecl;
+  }
+  
+  public static UnnamedBlockDeclContext createUnnamedBlockDecl(ParserRuleContext parent, String name) {
+    
+    UnnamedBlockDeclContext unnamedBlockDecl = new UnnamedBlockDeclContext(parent, -1);
+    
+    unnamedBlockDecl.id = createToken(StencilParser.ID, name);
+    
+    return unnamedBlockDecl;
   }
   
   public static AllBlockDeclContext createAllBlockDecl(ParserRuleContext parent, String name) {

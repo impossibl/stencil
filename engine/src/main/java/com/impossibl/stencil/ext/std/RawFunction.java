@@ -28,12 +28,30 @@ public class RawFunction implements Callable, Preparable {
   }
   
   @Override
-  public Object prepare(Map<String,Block> blocks) throws IOException {
+  public Object prepare(Map<String,?> params) throws IOException {
     
     StringWriter out = new StringWriter();
     
-    for(Block block : blocks.values()) {
-      block.write(out);
+    for(Map.Entry<String, ?> paramEntry : params.entrySet()) {
+      
+      Object param = paramEntry.getValue();
+      
+      if (param instanceof Block) {
+        
+        ((Block) param).write(out);
+        
+      }
+      else if (param instanceof Map) {
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Block> otherBlocks = (Map<String, Block>) param;
+        
+        for (Block block : otherBlocks.values()) {
+          block.write(out);
+        }
+        
+      }
+      
     }
     
     return out.toString();

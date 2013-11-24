@@ -42,4 +42,14 @@ public class FunctionTest extends Tests {
     assertMatch("$func test(*a) { return a; };$test(a=1,b=2);","{b=2, a=1}");
   }
   
+  @Test
+  public void testRestOfNamedParameter() {
+    assertMatch("$func test(a,*b) { return b; };$test(a=1,b=2,c=3);","{b=2, c=3}");
+  }
+  
+  @Test
+  public void testRestOfPositionalParameter() {
+    assertMatch("$func test(a,*b) { return b; };$test(1,2,3);","{2=3, 1=2}");
+  }
+  
 }

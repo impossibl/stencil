@@ -54,6 +54,16 @@ public class MacroTest extends Tests {
   }
   
   @Test
+  public void testUnboundBlock() {
+    assertMatch("$macro test() [a,b] {$a;$b;};$test() a {###AAA###};", "###AAA###");
+  }
+  
+  @Test
+  public void testDefaultBlock() {
+    assertMatch("$macro test() [a,b] {$a;$b {###BBB###};};$test() a {###AAA###};", "###AAA######BBB###");
+  }
+  
+  @Test
   public void testAllParameter() {
     assertMatch("$macro test(*a) {$a;};$test(a=1,b=2);","{b=2, a=1}");
   }
@@ -66,6 +76,16 @@ public class MacroTest extends Tests {
   @Test
   public void testAllBlock() {
     assertMatch("$macro test() [*a] {$a;};$test a {AAA} b {BBB};","{b=BBB, a=AAA}");
+  }
+  
+  @Test
+  public void testAllAndUnnamedBlock() {
+    assertMatch("$macro test() [+a,*b] {$a;$b;};$test {UNNAMED} a {AAA} b {BBB};","UNNAMED{b=BBB, a=AAA}");
+  }
+  
+  @Test
+  public void testRestOfBlocks() {
+    assertMatch("$macro test() [a,+b,*c] {$c;};$test {UNNAMED} a {AAA} b {BBB} c {CCC};","{b=BBB, c=CCC}");
   }
   
 }

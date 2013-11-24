@@ -3,7 +3,6 @@ package com.impossibl.stencil.api.impl;
 import java.lang.reflect.Method;
 import java.util.Map;
 
-import com.impossibl.stencil.api.Block;
 import com.impossibl.stencil.api.Preparable;
 
 /**
@@ -31,7 +30,7 @@ public abstract class AnnotatedPreparableBase implements Preparable {
    * annotated with the Named annotation
    * @see com.impossibl.stencil.api.Named
    */
-  public Object prepare(Map<String, Block> params) throws Throwable {
+  public Object prepare(Map<String, ?> params) throws Throwable {
     return AnnotatedExtensions.exec(getMethod(), getBlockNames(), params, this);
   }
 

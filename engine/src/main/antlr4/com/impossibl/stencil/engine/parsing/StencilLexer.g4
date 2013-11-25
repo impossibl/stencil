@@ -52,6 +52,7 @@ STEXT_KEYS: [\\$}] -> type(TEXT);
 
 STEXT: (~[\\$}])+ -> type(TEXT);
 
+
 mode DTEXTS;
 
 DCOMMENT: '$*' .*? '*$' -> channel(HIDDEN);
@@ -68,6 +69,7 @@ DTEXTWS: [ \t\r\n]+ -> type(TEXTWS);
 DTEXT_KEYS: [\\$}] -> type(TEXT);
 
 DTEXT: (~[\\$}])+ -> type(TEXT);
+
 
 mode OUTPUTS;
 

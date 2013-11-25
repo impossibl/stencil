@@ -1227,8 +1227,9 @@ public class StencilInterpreter {
       boolean cond = evalBoolean(object.expr);
   
       OutputBlockContext out = cond ? object.thenBlock : object.elseBlock;
-      
-      out.accept(this);
+  
+      if (out != null)
+        out.accept(this);
   
       return null;
     }
@@ -1265,7 +1266,8 @@ public class StencilInterpreter {
         }
         else {
 
-          object.elseBlock.accept(this);
+          if (object.elseBlock != null)
+            object.elseBlock.accept(this);
         }
   
       }
@@ -2166,11 +2168,16 @@ public class StencilInterpreter {
       }
       else if(source instanceof List<?>) {
         
-        @SuppressWarnings("unchecked")
-        List<Object> list = ((List<Object>)source);
+        List<?> list = ((List<?>)source);
         
         return list.get(index);
         
+      }
+      else if(source instanceof Map<?,?>) {
+        
+        Map<?, ?> map = ((Map<?, ?>)source);
+
+        return map.get(index);
       }
       else {
         throw new ExecutionException("invalid index expression", getLocation(loc));

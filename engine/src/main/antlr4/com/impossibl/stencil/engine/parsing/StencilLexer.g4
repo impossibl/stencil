@@ -38,33 +38,41 @@ tokens {
 
 SCOMMENT: '$*' .*? '*$' -> channel(HIDDEN);
 
+STEXTESC_OUTS: '\\$' { setText("$"); setType(TEXT); };
+STEXTESC_OPEN: '\\{' { setText("{"); setType(TEXT); };
+STEXTESC_CLOS: '\\}' { setText("}"); setType(TEXT); };
+
 HEADERS_MODE: '$$' -> pushMode(OUTPUTS);
 SOUTPUTS_MODE: '$' -> pushMode(OUTPUTS), type(OUTPUTS_MODE);
 STEXTS_END: '}' -> popMode, type(TEXTS_END);
 
 STEXTWS: [ \t\r\n]+ -> type(TEXTWS);
 
-STEXT: (STEXTESC|~[$}])+ -> type(TEXT);
-fragment STEXTESC: '\\{' | '\\}';
+STEXT_KEYS: [\\$}] -> type(TEXT);
+
+STEXT: (~[\\$}])+ -> type(TEXT);
 
 mode DTEXTS;
 
 DCOMMENT: '$*' .*? '*$' -> channel(HIDDEN);
+
+DTEXTESC_OUTS: '\\$$' { setText("$$"); setType(TEXT); };
+DTEXTESC_OPEN: '\\{{' { setText("{{"); setType(TEXT); };
+DTEXTESC_CLOS: '\\}}' { setText("}}"); setType(TEXT); };
 
 DOUTPUTS_MODE: '$$' -> pushMode(OUTPUTS), type(OUTPUTS_MODE);
 DTEXTS_END: '}}' -> popMode, type(TEXTS_END);
 
 DTEXTWS: [ \t\r\n]+ -> type(TEXTWS);
 
-DTEXT_KEY1: '$' -> type(TEXT);
-DTEXT_KEY2: '}' -> type(TEXT);
+DTEXT_KEYS: [\\$}] -> type(TEXT);
 
-DTEXT: (DTEXTESC|~[$}])+ -> type(TEXT);
-fragment DTEXTESC: '\\{{' | '\\}}';
+DTEXT: (~[\\$}])+ -> type(TEXT);
 
 mode OUTPUTS;
 
-COMMENT: '$*' .*? '*$' -> channel(HIDDEN);
+COMMENT1: '$*' .*? '*$' -> channel(HIDDEN);
+COMMENT2: '//'..'\n' -> channel(HIDDEN);
 
 DTEXTS_MODE: '{{' -> pushMode(DTEXTS), type(TEXTS_MODE);
 STEXTS_MODE: {statementBlocks<0}? '{' -> pushMode(STEXTS), type(TEXTS_MODE);

@@ -14,6 +14,13 @@ import java.io.Writer;
 public interface Block {
   
   /**
+   * Does the block have output available?
+   *  
+   * @return True if the block has output, false if not
+   */
+  boolean getHasOutput();
+  
+  /**
    * Processes the block and writes the resulting text to the given character
    * stream
    * 

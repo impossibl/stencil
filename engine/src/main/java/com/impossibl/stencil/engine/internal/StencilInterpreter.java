@@ -549,6 +549,11 @@ public class StencilInterpreter {
     }
 
     @Override
+    public boolean getHasOutput() {
+      return true;
+    }
+
+    @Override
     public void write(Writer out) throws IOException {
       
       Writer prevOut = currentEnvironment.out;
@@ -580,7 +585,7 @@ public class StencilInterpreter {
   }
 
   /**
-   * ParameterOutputBlock bound to the scope in which it was defined and the
+   * ParamOutputBlock bound to the scope in which it was defined and the
    * related replacement mode.
    * 
    * @author kdubb
@@ -635,6 +640,11 @@ public class StencilInterpreter {
 
     }
     
+    @Override
+    public boolean getHasOutput() {
+      return source != null;
+    }
+
     @Override
     public void write(Writer out) throws IOException {
       

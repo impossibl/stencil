@@ -39,4 +39,19 @@ public class ErrorTest extends Tests {
     eval("$ foreach ;");
   }
   
+  @Test(expected=ParseException.class)
+  public void testDoubleUnboundParamError() throws ParseException {
+    eval("$macro test(*a,b,*c) {};");
+  }
+  
+  @Test(expected=ParseException.class)
+  public void testDoubleUnboundBlockError() throws ParseException {
+    eval("$macro test() [*a,b,*c] {};");
+  }
+  
+  @Test(expected=ParseException.class)
+  public void testDoubleUnnamedBlockError() throws ParseException {
+    eval("$macro test() [+a,b,+c] {};");
+  }
+  
 }

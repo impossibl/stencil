@@ -333,39 +333,50 @@ qualifiedName:
 
 
 
-callableSignature:
-  	PAREN_OPEN (paramDecls+=parameterDecl (COMMA paramDecls+=parameterDecl)* (COMMA allDecl=allParameterDecl)?)? PAREN_CLOSE
-  | PAREN_OPEN allDecl=allParameterDecl PAREN_CLOSE
+callableSignature
+@after {
+  boolean unbounds=false;
+  for(ParameterDeclContext paramDecl : $paramDecls) {
+    if( paramDecl.flag != null && paramDecl.flag.getText().equals("*") ) {
+      if(unbounds) {
+        throw new InvalidSignatureException("macros can only mark a single parameter for unbound", this, _input, _ctx, paramDecl.flag);
+      }
+      unbounds = true;
+    }
+  }
+}
+: PAREN_OPEN (paramDecls+=parameterDecl (COMMA paramDecls+=parameterDecl)*)? PAREN_CLOSE
 ;
 
 parameterDecl:
-		id=ID (EQL_ASSIGN expr=expression)?
-;
-
-allParameterDecl:
-  MUL id=ID
+		(flag=MUL)? id=ID (EQL_ASSIGN expr=expression)?
 ;
 
 
-prepareSignature:
-    SQUARE_OPEN (blockDecls+=blockDecl (COMMA blockDecls+=blockDecl)* (COMMA unnamedDecl=unnamedBlockDecl)? (COMMA allDecl=allBlockDecl)?)? SQUARE_CLOSE
-  | SQUARE_OPEN unnamedDecl=unnamedBlockDecl COMMA allDecl=allBlockDecl SQUARE_CLOSE
-  | SQUARE_OPEN unnamedDecl=unnamedBlockDecl SQUARE_CLOSE
-  | SQUARE_OPEN allDecl=allBlockDecl SQUARE_CLOSE
+prepareSignature
+@after {
+  boolean unbounds=false, unnamed=false;
+  for(BlockDeclContext paramDecl : $blockDecls) {
+    if( paramDecl.flag != null && paramDecl.flag.getText().equals("*") ) {
+      if(unbounds) {
+        throw new InvalidSignatureException("macros can only mark a single block for unbound", this, _input, _ctx, paramDecl.flag);
+      }
+      unbounds = true;
+    }
+    if( paramDecl.flag != null && paramDecl.flag.getText().equals("+") ) {
+      if(unnamed) {
+        throw new InvalidSignatureException("macros can only mark a single block for unnamed", this, _input, _ctx, paramDecl.flag);
+      }
+      unnamed = true;
+    }
+  }
+}
+: SQUARE_OPEN (blockDecls+=blockDecl (COMMA blockDecls+=blockDecl)*)? SQUARE_CLOSE
 ;
 
 blockDecl:
-  id=ID
+  (flag=(ADD|MUL))? id=ID
 ;
-
-unnamedBlockDecl:
-  ADD id=ID
-;
-
-allBlockDecl:
-  MUL id=ID
-;
-
 
 callableInvocation:
 	PAREN_OPEN (posParams=positionalParameters|namedParams=namedParameters) PAREN_CLOSE

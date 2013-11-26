@@ -2269,7 +2269,7 @@ public class StencilInterpreter {
       for(String paramName : paramNames) {
         
         if (paramName.equals(ALL_PARAM_NAME)) {
-          sig.allDecl = Contexts.createAllParameterDecl(sig, ALL_PARAM_NAME);
+          sig.paramDecls.add(Contexts.createAllParameterDecl(sig, ALL_PARAM_NAME));
         }
         else {
           sig.paramDecls.add(Contexts.createParameterDecl(sig, paramName));
@@ -2295,10 +2295,10 @@ public class StencilInterpreter {
       for(String blockName : blockNames) {
         
         if (blockName.equals(ALL_BLOCK_NAME)) {
-          sig.allDecl = Contexts.createAllBlockDecl(sig, blockName);
+          sig.blockDecls.add(Contexts.createAllBlockDecl(sig, blockName));
         }
         else if (blockName.equals(UNNAMED_BLOCK_NAME)) {
-          sig.unnamedDecl = Contexts.createUnnamedBlockDecl(sig, blockName);
+          sig.blockDecls.add(Contexts.createUnnamedBlockDecl(sig, blockName));
         }
         else {
           sig.blockDecls.add(Contexts.createBlockDecl(sig, blockName));
@@ -2452,10 +2452,20 @@ public class StencilInterpreter {
 
       ListIterator<ParameterDeclContext> paramDeclIter = sig.paramDecls.listIterator();
       ListIterator<ExpressionContext> paramExprIter = inv.posParams.exprs.listIterator();
+      
+      ParameterDeclContext allDecl = null;
 
       while (paramDeclIter.hasNext()) {
 
         ParameterDeclContext paramDecl = paramDeclIter.next();
+
+        if (paramDecl.flag != null && paramDecl.flag.getText().equals("*")) {
+          if (allDecl != null) {
+            throw new ExecutionException("only a single parameter can be marked with '*'");
+          }
+          allDecl = paramDecl;
+          continue;
+        }
         
         String paramName = name(paramDecl);
         
@@ -2473,7 +2483,7 @@ public class StencilInterpreter {
       // Add rest of parameters (if requested)
       //
       
-      if (sig.allDecl != null) {
+      if (allDecl != null) {
         
         Map<String, Object> otherParams = new HashMap<>();
         
@@ -2488,7 +2498,7 @@ public class StencilInterpreter {
           otherParams.put(Integer.toString(paramIdx), paramVal);
         }
         
-        vals.put(sig.allDecl.id.getText(), otherParams);
+        vals.put(allDecl.id.getText(), otherParams);
       }
       
     }
@@ -2509,10 +2519,17 @@ public class StencilInterpreter {
 
       List<NamedValueContext> namedParameters = new ArrayList<>(inv.namedParams.namedValues);
       Iterator<ParameterDeclContext> paramDeclIter = sig.paramDecls.iterator();
+      
+      ParameterDeclContext allDecl = null;
 
       while (paramDeclIter.hasNext()) {
 
         ParameterDeclContext paramDecl = paramDeclIter.next();
+        
+        if (paramDecl.flag != null && paramDecl.flag.getText().equals("*")) {
+          allDecl = paramDecl;
+          continue;
+        }
         
         String paramName = name(paramDecl);
 
@@ -2533,7 +2550,7 @@ public class StencilInterpreter {
       // Add rest of parameters (if requested)
       //
       
-      if (sig.allDecl != null) {
+      if (allDecl != null) {
         
         Map<String, Object> otherParams = new HashMap<>();
         
@@ -2547,7 +2564,7 @@ public class StencilInterpreter {
           
         }
 
-        vals.put(sig.allDecl.id.getText(), otherParams);
+        vals.put(allDecl.id.getText(), otherParams);
       }
       
 
@@ -2569,10 +2586,32 @@ public class StencilInterpreter {
       return Collections.emptyMap();
     }
     
+    BlockDeclContext allDecl = null;
+    BlockDeclContext unnamedDecl = null;
+    
     List<NamedOutputBlockContext> namedBlocks = new ArrayList<>(inv.namedBlocks);
     Map<String, Object> blocks = new HashMap<>();
     
     for (BlockDeclContext blockDecl : sig.blockDecls) {
+      
+      if (blockDecl.flag != null) {
+        if (blockDecl.flag.getText().equals("*")) {
+          if (allDecl != null) {
+            throw new ExecutionException("only a single parameter can be marked with '*'");
+          }
+          allDecl = blockDecl;
+        }
+        else if (blockDecl.flag.getText().equals("+")) {
+          if (unnamedDecl != null) {
+            throw new ExecutionException("only a single parameter can be marked with '+'");
+          }
+          unnamedDecl = blockDecl;
+        }
+        else {
+          throw new ExecutionException("unknown block declaration flag");
+        }
+        continue;
+      }
       
       //Find the block
       
@@ -2590,13 +2629,13 @@ public class StencilInterpreter {
     // Bind unnamed block (if requested)
     //
     
-    if (sig.unnamedDecl != null) {
+    if (unnamedDecl != null) {
       
       UnnamedOutputBlockContext unnamedBlock = inv.unnamedBlock;
       
       BoundParamOutputBlock boundUnnamedBlock = bindBlock(unnamedBlock);
       
-      blocks.put(sig.unnamedDecl.id.getText(), boundUnnamedBlock);
+      blocks.put(unnamedDecl.id.getText(), boundUnnamedBlock);
       
     }
     
@@ -2604,12 +2643,12 @@ public class StencilInterpreter {
     // Bind rest of blocks (if requested)
     //
     
-    if (sig.allDecl != null) {
+    if (allDecl != null) {
       
       Map<String, Block> otherBlocks = new HashMap<>();
       
       // Add unnamed block if it wasn't bound explicitly
-      if (inv.unnamedBlock != null && sig.unnamedDecl == null) {
+      if (inv.unnamedBlock != null && unnamedDecl == null) {
         
         UnnamedOutputBlockContext unnamedBlock = inv.unnamedBlock;
         
@@ -2629,7 +2668,7 @@ public class StencilInterpreter {
         
       }
 
-      blocks.put(sig.allDecl.id.getText(), otherBlocks);
+      blocks.put(allDecl.id.getText(), otherBlocks);
       
     }
 

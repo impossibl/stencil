@@ -9,8 +9,6 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 import com.impossibl.stencil.engine.parsing.ParamOutputBlockMode;
 import com.impossibl.stencil.engine.parsing.StencilParser;
-import com.impossibl.stencil.engine.parsing.StencilParser.AllBlockDeclContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.AllParameterDeclContext;
 import com.impossibl.stencil.engine.parsing.StencilParser.BlockDeclContext;
 import com.impossibl.stencil.engine.parsing.StencilParser.BooleanLiteralContext;
 import com.impossibl.stencil.engine.parsing.StencilParser.CallableSignatureContext;
@@ -29,7 +27,6 @@ import com.impossibl.stencil.engine.parsing.StencilParser.ParameterDeclContext;
 import com.impossibl.stencil.engine.parsing.StencilParser.SafeMemberSelectorContext;
 import com.impossibl.stencil.engine.parsing.StencilParser.SimpleNameContext;
 import com.impossibl.stencil.engine.parsing.StencilParser.StringLiteralContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.UnnamedBlockDeclContext;
 import com.impossibl.stencil.engine.parsing.StencilParser.UnnamedOutputBlockContext;
 import com.impossibl.stencil.engine.parsing.StencilParser.VariableDeclContext;
 import com.impossibl.stencil.engine.parsing.StencilParser.VariableRefContext;
@@ -209,11 +206,12 @@ public class Contexts {
     return paramDecl;
   }
   
-  public static AllParameterDeclContext createAllParameterDecl(ParserRuleContext parent, String name) {
+  public static ParameterDeclContext createAllParameterDecl(ParserRuleContext parent, String name) {
     
-    AllParameterDeclContext allParamDecl = new AllParameterDeclContext(parent, -1);
+    ParameterDeclContext allParamDecl = new ParameterDeclContext(parent, -1);
     
     allParamDecl.id = createToken(StencilParser.ID, name);
+    allParamDecl.flag = createToken(StencilParser.MUL, "*");
     
     return allParamDecl;
   }
@@ -227,20 +225,22 @@ public class Contexts {
     return blockDecl;
   }
   
-  public static UnnamedBlockDeclContext createUnnamedBlockDecl(ParserRuleContext parent, String name) {
+  public static BlockDeclContext createUnnamedBlockDecl(ParserRuleContext parent, String name) {
     
-    UnnamedBlockDeclContext unnamedBlockDecl = new UnnamedBlockDeclContext(parent, -1);
+    BlockDeclContext unnamedBlockDecl = new BlockDeclContext(parent, -1);
     
     unnamedBlockDecl.id = createToken(StencilParser.ID, name);
+    unnamedBlockDecl.flag = createToken(StencilParser.ADD, "+");
     
     return unnamedBlockDecl;
   }
   
-  public static AllBlockDeclContext createAllBlockDecl(ParserRuleContext parent, String name) {
+  public static BlockDeclContext createAllBlockDecl(ParserRuleContext parent, String name) {
     
-    AllBlockDeclContext allBlockDecl = new AllBlockDeclContext(parent, -1);
+    BlockDeclContext allBlockDecl = new BlockDeclContext(parent, -1);
     
     allBlockDecl.id = createToken(StencilParser.ID, name);
+    allBlockDecl.flag = createToken(StencilParser.MUL, "*");
     
     return allBlockDecl;
   }

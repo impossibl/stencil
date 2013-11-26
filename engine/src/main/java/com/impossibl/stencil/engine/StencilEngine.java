@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.ServiceLoader;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
-import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
@@ -33,6 +32,7 @@ import com.impossibl.stencil.api.impl.URLTemplateSourceLoader;
 import com.impossibl.stencil.engine.internal.Paths;
 import com.impossibl.stencil.engine.internal.StencilInterpreter;
 import com.impossibl.stencil.engine.internal.TemplateImpl;
+import com.impossibl.stencil.engine.parsing.StencilErrorStrategy;
 import com.impossibl.stencil.engine.parsing.StencilLexer;
 import com.impossibl.stencil.engine.parsing.StencilParser;
 import com.impossibl.stencil.engine.parsing.StencilParser.HeaderContext;
@@ -455,7 +455,7 @@ public class StencilEngine {
     CommonTokenStream tokenStream = new CommonTokenStream(lexer);
     
     StencilParser parser = new StencilParser(tokenStream);
-    parser.setErrorHandler(new BailErrorStrategy());
+    parser.setErrorHandler(new StencilErrorStrategy());
 
     try {
       return parser.template();

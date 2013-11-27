@@ -39,7 +39,7 @@ public class FunctionTest extends Tests {
   
   @Test
   public void testAllParameter() {
-    assertMatch("$func test(*a) { return a; };$test(a=1,b=2);","{b=2, a=1}");
+    assertMatch("$func test(*a) { return a; };$test(a=1,b=2);","{a=1, b=2}");
   }
   
   @Test
@@ -49,7 +49,7 @@ public class FunctionTest extends Tests {
   
   @Test
   public void testRestOfPositionalParameter() {
-    assertMatch("$func test(a,*b) { return b; };$test(1,2,3);","{2=3, 1=2}");
+    assertMatch("$func test(a,*b) { return b; };$test(1,2,3);","{1=2, 2=3}");
   }
   
 }

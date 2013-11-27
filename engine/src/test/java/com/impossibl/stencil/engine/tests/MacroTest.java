@@ -65,7 +65,7 @@ public class MacroTest extends Tests {
   
   @Test
   public void testAllParameter() {
-    assertMatch("$macro test(*a) {$a;};$test(a=1,b=2);","{b=2, a=1}");
+    assertMatch("$macro test(*a) {$a;};$test(a=1,b=2);","{a=1, b=2}");
   }
   
   @Test

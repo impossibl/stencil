@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -2495,7 +2496,7 @@ public class StencilInterpreter {
       
       if (allDecl != null) {
         
-        Map<String, Object> otherParams = new HashMap<>();
+        Map<String, Object> otherParams = new LinkedHashMap<>();
         
         while (paramExprIter.hasNext()) {
           
@@ -2562,7 +2563,7 @@ public class StencilInterpreter {
       
       if (allDecl != null) {
         
-        Map<String, Object> otherParams = new HashMap<>();
+        Map<String, Object> otherParams = new LinkedHashMap<>();
         
         for (NamedValueContext namedValue : namedParameters) {
           

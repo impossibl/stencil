@@ -39,7 +39,7 @@ public class HtmlExtensionMethodsTest extends Tests {
 
   @Test
   public void testAttrs() {
-    assertMatch("$attrs(class='myClass', id='realId');", "id=\"realId\" class=\"myClass\"");
+    assertMatch("$attrs(class='myClass', id='realId');", "class=\"myClass\" id=\"realId\"");
   }
   
 }

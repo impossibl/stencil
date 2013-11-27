@@ -7,6 +7,7 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -150,10 +151,11 @@ public class StencilEngine {
    * @param path Path to load template from
    * @param parameters Parameters to pass to template
    * @param out Character stream to write to
+   * @param extraGlobalScopes Any extra global scopes to make available
    * @throws IOException
    * @throws ParseException
    */
-  public void render(String path, Map<String, Object> parameters, Writer out) throws IOException, ParseException {
+  public void render(String path, Map<String, Object> parameters, Writer out, GlobalScope... extraGlobalScopes) throws IOException, ParseException {
   	render(load(path), parameters, out);
   }
   
@@ -164,11 +166,12 @@ public class StencilEngine {
    * @param text Template text to render
    * @param parameters Parameters to pass to template
    * @param out Character stream to write to
+   * @param extraGlobalScopes Any extra global scopes to make available
    * @throws IOException
    * @throws ParseException
    */
-  public void renderInline(String text, Map<String, Object> parameters, Writer out) throws IOException, ParseException {
-    render(loadInline(text), parameters, out);
+  public void renderInline(String text, Map<String, Object> parameters, Writer out, GlobalScope... extraGlobalScopes) throws IOException, ParseException {
+    render(loadInline(text), parameters, out, extraGlobalScopes);
   }
   
   /**
@@ -178,10 +181,11 @@ public class StencilEngine {
    * @param template Previously loaded template to render
    * @param parameters Parameters to pass to template
    * @param out Character stream to write to
+   * @param extraGlobalScopes Any extra global scopes to make available
    * @throws IOException
    */
-  public void render(Template template, Map<String, Object> parameters, Writer out) throws IOException {
-    newInterpreter().declare(parameters).process((TemplateImpl) template, out);
+  public void render(Template template, Map<String, Object> parameters, Writer out, GlobalScope... extraGlobalScopes) throws IOException {
+    newInterpreter(extraGlobalScopes).declare(parameters).process((TemplateImpl) template, out);
   }
 	  
   /**
@@ -190,11 +194,12 @@ public class StencilEngine {
    * 
    * @param path Path to load template from
    * @param out Character stream to write to
+   * @param extraGlobalScopes Any extra global scopes to make available
    * @throws IOException
    * @throws ParseException
    */
-  public void render(String path, Writer out) throws IOException, ParseException {
-    render(load(path), out);
+  public void render(String path, Writer out, GlobalScope... extraGlobalScopes) throws IOException, ParseException {
+    render(load(path), out, extraGlobalScopes);
   }
 	  
   /**
@@ -203,11 +208,12 @@ public class StencilEngine {
    * 
    * @param text Template text to render
    * @param out Character stream to write to
+   * @param extraGlobalScopes Any extra global scopes to make available
    * @throws IOException
    * @throws ParseException
    */
-  public void renderInline(String text, Writer out) throws IOException, ParseException {
-    render(loadInline(text), out);
+  public void renderInline(String text, Writer out, GlobalScope... extraGlobalScopes) throws IOException, ParseException {
+    render(loadInline(text), out, extraGlobalScopes);
   }
   
   /**
@@ -215,10 +221,11 @@ public class StencilEngine {
    * 
    * @param template Previously loaded template to render
    * @param out Character stream to write to
+   * @param extraGlobalScopes Any extra global scopes to make available
    * @throws IOException
    */
-  public void render(Template template, Writer out) throws IOException {
-    newInterpreter().process((TemplateImpl) template, out);
+  public void render(Template template, Writer out, GlobalScope... extraGlobalScopes) throws IOException {
+    newInterpreter(extraGlobalScopes).process((TemplateImpl) template, out);
   }
 
   /**
@@ -227,11 +234,12 @@ public class StencilEngine {
    * 
    * @param path Path to load template from
    * @param parameters Parameters to pass to template
+   * @param extraGlobalScopes Any extra global scopes to make available
    * @return Rendered text
    * @throws IOException
    * @throws ParseException
    */
-  public String render(String path, Map<String, Object> parameters) throws IOException, ParseException {
+  public String render(String path, Map<String, Object> parameters, GlobalScope... extraGlobalScopes) throws IOException, ParseException {
     return render(load(path), parameters);
   }
   
@@ -240,12 +248,13 @@ public class StencilEngine {
    * 
    * @param text Template text to render
    * @param parameters Parameters to pass to template
+   * @param extraGlobalScopes Any extra global scopes to make available
    * @return Rendered text
    * @throws IOException
    * @throws ParseException
    */
-  public String renderInline(String text, Map<String, Object> parameters) throws IOException, ParseException {
-    return render(loadInline(text), parameters);
+  public String renderInline(String text, Map<String, Object> parameters, GlobalScope... extraGlobalScopes) throws IOException, ParseException {
+    return render(loadInline(text), parameters, extraGlobalScopes);
   }
   
   /**
@@ -254,12 +263,13 @@ public class StencilEngine {
    * 
    * @param template Previously loaded template to render
    * @param parameters Parameters to pass to template
+   * @param extraGlobalScopes Any extra global scopes to make available
    * @return Rendered text
    * @throws IOException
    */
-  public String render(Template template, Map<String, Object> parameters) throws IOException {  
+  public String render(Template template, Map<String, Object> parameters, GlobalScope... extraGlobalScopes) throws IOException {  
     StringWriter out = new StringWriter();
-    render(template, parameters, out);
+    render(template, parameters, out, extraGlobalScopes);
     return out.toString();
   }
   
@@ -267,36 +277,39 @@ public class StencilEngine {
    * Renders template loaded from path and returns rendered text.
    * 
    * @param path Path to load template from
+   * @param extraGlobalScopes Any extra global scopes to make available
    * @return Rendered text
    * @throws IOException
    * @throws ParseException
    */
-  public String render(String path) throws IOException, ParseException {
-    return render(load(path));
+  public String render(String path, GlobalScope... extraGlobalScopes) throws IOException, ParseException {
+    return render(load(path), extraGlobalScopes);
   }
   
   /**
    * Renders given text and returns rendered text.
    * 
    * @param text Template text to render
+   * @param extraGlobalScopes Any extra global scopes to make available
    * @return Rendered text
    * @throws IOException
    * @throws ParseException
    */
-  public String renderInline(String text) throws IOException, ParseException {
-    return render(loadInline(text));
+  public String renderInline(String text, GlobalScope... extraGlobalScopes) throws IOException, ParseException {
+    return render(loadInline(text), extraGlobalScopes);
   }
   
   /**
    * Renders given template and returns rendered text.
    * 
    * @param template Previously loaded template to render
+   * @param extraGlobalScopes Any extra global scopes to make available
    * @return Rendered text
    * @throws IOException
    */
-  public String render(Template template) throws IOException {  
+  public String render(Template template, GlobalScope... extraGlobalScopes) throws IOException {  
     StringWriter out = new StringWriter();
-    render(template, out);
+    render(template, out, extraGlobalScopes);
     return out.toString();
   }
   
@@ -442,8 +455,8 @@ public class StencilEngine {
     return modified;
   }
   
-  private StencilInterpreter newInterpreter() {
-    return new StencilInterpreter(this, globalScopes);
+  private StencilInterpreter newInterpreter(GlobalScope... extraGlobalScopes) {
+    return new StencilInterpreter(this, Iterables.concat(Arrays.asList(extraGlobalScopes), globalScopes));
   }
 
   private TemplateContext parse(Reader reader) throws IOException, ParseException {

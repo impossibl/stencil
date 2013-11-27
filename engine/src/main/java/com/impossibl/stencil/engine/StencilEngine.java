@@ -340,9 +340,15 @@ public class StencilEngine {
   public Template load(String path) throws IOException, ParseException {
   	
     try(TemplateSource source = sourceLoader.find(path)) {
-
-  		return load(path, source);
+      
+      if (source != null) {
+        
+        return load(path, source);
+      }
+      
   	}
+    
+    return null;
   }
   
   private Template load(String path, TemplateSource source) throws IOException, ParseException {

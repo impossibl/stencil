@@ -178,12 +178,14 @@ public class StencilInterpreter {
 
     
     protected StencilInterpreter interpreter;
+    protected Environment declaringEnvironment;
     protected Scope parent;
     protected Map<String, Object> values = new HashMap<String, Object>();
     
 
     public Scope(StencilInterpreter interpreter, Scope parent) {
       this.interpreter = interpreter;
+      this.declaringEnvironment = interpreter.currentEnvironment;
       this.parent = parent;
     }
     
@@ -2353,13 +2355,16 @@ public class StencilInterpreter {
    */
   public void process(TemplateImpl template, Writer out) throws IOException {
     
-  	Environment env = switchEnvironment(new Environment(template.getPath(), out));
+    Environment env = new Environment(template.getPath(), out);
+    currentScope.declaringEnvironment = env;
+
+    Environment prevEnv = switchEnvironment(env);
     
 		try {
 			template.getContext().accept(visitor);
 		}
 		finally {
-		  switchEnvironment(env);
+		  switchEnvironment(prevEnv);
 		}
   }
   
@@ -2874,7 +2879,7 @@ public class StencilInterpreter {
    */
   ExecutionLocation getLocation(ParserRuleContext object) {
     Token start = object.getStart();
-    return new ExecutionLocation(currentEnvironment.path, start.getLine(), start.getCharPositionInLine());
+    return new ExecutionLocation(currentScope.declaringEnvironment.path, start.getLine(), start.getCharPositionInLine() + 1);
   }
   
   void output(Object val) {

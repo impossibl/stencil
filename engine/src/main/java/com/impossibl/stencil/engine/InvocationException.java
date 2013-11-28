@@ -7,24 +7,12 @@ public class InvocationException extends ExecutionException {
   public InvocationException() {
 	}
 
-	public InvocationException(String message, ExecutionLocation location, Throwable cause) {
-		super(message, location, cause);
-	}
-
-  public InvocationException(String message, Throwable cause) {
-    super(message, cause);
+  public InvocationException(String message, Throwable cause, ExecutionLocation location) {
+    super(message, cause, location);
   }
 
   public InvocationException(String message, ExecutionLocation location) {
     super(message, location);
   }
-
-	public InvocationException(String message) {
-		super(message);
-	}
-
-	public InvocationException(Throwable cause) {
-		super(cause);
-	}
 
 }

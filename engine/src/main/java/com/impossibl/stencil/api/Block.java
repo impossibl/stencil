@@ -3,6 +3,8 @@ package com.impossibl.stencil.api;
 import java.io.IOException;
 import java.io.Writer;
 
+import com.impossibl.stencil.engine.ExecutionException;
+
 /**
  * Block of output commands.  Allows Callable and Preparable
  * objects to retrieve the text of blocks programmatically
@@ -26,7 +28,8 @@ public interface Block {
    * 
    * @param out Character stream to write to
    * @throws IOException
+   * @throws ExecutionException 
    */
-  void write(Writer out) throws IOException;
+  void write(Writer out) throws IOException, ExecutionException;
 
 }

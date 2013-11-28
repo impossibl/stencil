@@ -15,6 +15,7 @@ import java.util.ServiceLoader;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -375,7 +376,9 @@ public class StencilEngine {
 		  TemplateContext context = parse(sourceReader);
 
 			if (context.exception != null) {
-				throw new ExecutionException("syntax error", context.exception);
+			  RecognitionException re = context.exception;
+			  Token errToken = re.getOffendingToken();
+				throw new ExecutionException("syntax error", context.exception, new ExecutionLocation(uri.toString(), errToken.getLine(), errToken.getCharPositionInLine()+1));
 			}
 
 			return cache.update(uri, new CachedTemplate(context, templateSource.getTag()));

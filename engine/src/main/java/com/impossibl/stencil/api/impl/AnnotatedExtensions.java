@@ -62,7 +62,7 @@ public class AnnotatedExtensions {
       }
     }
     
-    throw new ExecutionException("invalid auto-function: no '" + name + "' method declared");
+    throw new ExecutionException("invalid auto-function: no '" + name + "' method declared", null);
   }
 
   /**
@@ -92,7 +92,7 @@ public class AnnotatedExtensions {
       throw new RuntimeException(e);
     }
     catch (IllegalArgumentException e) {
-      throw new InvocationException("invalid arguments", e);
+      throw new InvocationException("invalid arguments", e, null);
     }
     catch (InvocationTargetException e) {
       throw e.getTargetException();

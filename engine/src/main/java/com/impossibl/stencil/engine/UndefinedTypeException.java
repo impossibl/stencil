@@ -7,16 +7,16 @@ public class UndefinedTypeException extends ExecutionException {
   public UndefinedTypeException() {
   }
 
-  public UndefinedTypeException(String message, Throwable cause) {
-    super(message, cause);
+  public UndefinedTypeException(String message, Throwable cause, ExecutionLocation location) {
+    super(message, cause, location);
   }
 
-  public UndefinedTypeException(String message) {
-    super(message);
+  public UndefinedTypeException(String message, ExecutionLocation location) {
+    super(message, location);
   }
 
-  public UndefinedTypeException(Throwable cause) {
-    super(cause);
+  public UndefinedTypeException(Throwable cause, ExecutionLocation location) {
+    super(cause, location);
   }
 
 }

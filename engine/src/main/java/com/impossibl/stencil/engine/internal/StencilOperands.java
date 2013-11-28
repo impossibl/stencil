@@ -13,6 +13,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import com.impossibl.stencil.engine.ExecutionException;
 
 public class StencilOperands {
@@ -29,6 +31,13 @@ public class StencilOperands {
    * 
    */
   protected static final int BIGD_SCALE = -1;
+  
+  /**
+   * The invoking interpreter
+   * 
+   */
+  protected StencilInterpreter interpreter;
+
   /**
    * The big decimal math context.
    * 
@@ -44,8 +53,8 @@ public class StencilOperands {
    * Creates a StencilOperands.
    * 
    */
-  public StencilOperands() {
-    this(MathContext.DECIMAL128, BIGD_SCALE);
+  public StencilOperands(StencilInterpreter interpreter) {
+    this(interpreter, MathContext.DECIMAL128, BIGD_SCALE);
   }
 
   /**
@@ -57,7 +66,8 @@ public class StencilOperands {
    * @param bigdScale
    *          the scale used for big decimals.
    */
-  public StencilOperands(MathContext bigdContext, int bigdScale) {
+  public StencilOperands(StencilInterpreter interpreter, MathContext bigdContext, int bigdScale) {
+    this.interpreter = interpreter;
     this.mathContext = bigdContext;
     this.mathScale = bigdScale;
   }
@@ -326,7 +336,7 @@ public class StencilOperands {
    *          second value
    * @return left + right.
    */
-  public Object add(Object left, Object right) {
+  public Object add(Object left, Object right, ParserRuleContext errCtx) {
     if (left == null && right == null) {
       return 0;
     }
@@ -381,7 +391,7 @@ public class StencilOperands {
     catch (java.lang.NumberFormatException nfe) {
     }
 
-    throw new ExecutionException("invalid operands for +");
+    throw new ExecutionException("invalid operands for +", interpreter.getLocation(errCtx));
   }
 
   /**

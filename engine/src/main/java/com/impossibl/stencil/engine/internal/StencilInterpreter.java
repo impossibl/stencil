@@ -177,11 +177,13 @@ public class StencilInterpreter {
     private static final Null NULL = new Null();
 
     
+    protected StencilInterpreter interpreter;
     protected Scope parent;
     protected Map<String, Object> values = new HashMap<String, Object>();
     
 
-    public Scope(Scope parent) {
+    public Scope(StencilInterpreter interpreter, Scope parent) {
+      this.interpreter = interpreter;
       this.parent = parent;
     }
     
@@ -201,15 +203,15 @@ public class StencilInterpreter {
      * @return Value of named variable
      * @throws UndefinedVariableException when the variable is undefined
      */
-    Object ref(String name) {
+    Object ref(String name, ParserRuleContext errCtx) {
 
       Object val = values.get(name);
       if(val == null) {
         
         if (parent == null)
-          throw new UndefinedVariableException(name);
+          throw new UndefinedVariableException(name, interpreter.getLocation(errCtx));
 
-        return parent.ref(name);
+        return parent.ref(name, errCtx);
       }
 
       return unwrap(val);
@@ -261,13 +263,28 @@ public class StencilInterpreter {
      * @param value Value to assign to variable
      * @throws UndefinedVariableException when the variable is undefined
      */
-    void assign(String name, Object value) {
+    void assign(String name, Object value, ParserRuleContext errCtx) {
       if (values.containsKey(name))
         values.put(name, wrap(value));
       else if (parent != null)
-        parent.assign(name, value);
+        parent.assign(name, value, errCtx);
       else
-        throw new UndefinedVariableException(name);
+        throw new UndefinedVariableException(name, interpreter.getLocation(errCtx));
+    }
+    
+    /**
+     * Assigns a control value to a variable in the current scope
+     * @param name Name of variable to assign value to
+     * @param value Value to assign to variable
+     * @throws UndefinedVariableException when the variable is undefined
+     */
+    void assignControl(String name, Object value) {
+      if (values.containsKey(name))
+        values.put(name, wrap(value));
+      else if (parent != null)
+        parent.assignControl(name, value);
+      else
+        throw new IllegalStateException("unknown control variable");
     }
 
     @Override
@@ -294,8 +311,8 @@ public class StencilInterpreter {
    */
   private static class CallableScope extends Scope {
 
-    public CallableScope(Scope parent) {
-      super(parent);
+    public CallableScope(StencilInterpreter interpreter, Scope parent) {
+      super(interpreter, parent);
     }
     
     @Override
@@ -316,13 +333,13 @@ public class StencilInterpreter {
     
     Iterable<GlobalScope> globalScopes;
 
-    public RootScope(Iterable<GlobalScope> globalScopes) {
-      super(null);
+    public RootScope(StencilInterpreter interpreter, Iterable<GlobalScope> globalScopes) {
+      super(interpreter, null);
       this.globalScopes = globalScopes;
     }
 
     @Override
-    Object ref(String name) {
+    Object ref(String name, ParserRuleContext errCtx) {
 
       Object val = values.get(name);
       if (val == null) {
@@ -352,13 +369,13 @@ public class StencilInterpreter {
     
     Iterable<Object> objects;
 
-    public WithScope(Iterable<Object> objects) {
-      super(null);
+    public WithScope(StencilInterpreter interpreter, Iterable<Object> objects) {
+      super(interpreter, null);
       this.objects = objects;
     }
 
     @Override
-    Object ref(String name) {
+    Object ref(String name, ParserRuleContext errCtx) {
 
       //Look for the variable in the local objects
       for(Object object : objects) {
@@ -366,11 +383,8 @@ public class StencilInterpreter {
         try {
           return PropertyUtils.getProperty(object, name);
         }
-        catch (IllegalAccessException e) {
-          throw new ExecutionException(e);
-        }
-        catch (InvocationTargetException e) {
-          throw new ExecutionException(e);
+        catch (IllegalAccessException | InvocationTargetException e) {
+          throw new ExecutionException(e, interpreter.getLocation(errCtx));
         }
         catch (NoSuchMethodException e) {
           //Ignore...
@@ -378,7 +392,7 @@ public class StencilInterpreter {
         
       }
       
-      return super.ref(name);
+      return super.ref(name, errCtx);
     }
     
   }
@@ -416,7 +430,7 @@ public class StencilInterpreter {
 
       try {
 
-        pushScope(new CallableScope(currentScope));
+        pushScope(new CallableScope(StencilInterpreter.this, currentScope));
 
         try {
           
@@ -578,7 +592,7 @@ public class StencilInterpreter {
         write(out);
       }
       catch (IOException e) {
-        throw new ExecutionException(e);
+        throw new ExecutionException(e, null);
       }
       return out.toString();
     }
@@ -670,7 +684,7 @@ public class StencilInterpreter {
         write(out);
       }
       catch (IOException e) {
-        throw new ExecutionException(e);
+        throw new ExecutionException(e, null);
       }
       return out.toString();
     }
@@ -680,14 +694,14 @@ public class StencilInterpreter {
   
   abstract class LValue {
     
-    abstract Object get();
-    abstract void set(Object val);
+    abstract Object get(ParserRuleContext errCtx);
+    abstract void set(Object val, ParserRuleContext errCtx);
     
     LValue select(RefSelectorContext selector) {
     	if(selector instanceof SafeMemberSelectorContext) {
-    		return new SafeSelectorLValue(get(), selector);
+    		return new SafeSelectorLValue(get(selector), selector);
     	}
-      return new SelectorLValue(get(), selector);
+      return new SelectorLValue(get(selector), selector);
     }
     
   }
@@ -703,13 +717,13 @@ public class StencilInterpreter {
     }
 
     @Override
-    Object get() {
-      return scope.ref(name);
+    Object get(ParserRuleContext errCtx) {
+      return scope.ref(name, errCtx);
     }
 
     @Override
-    void set(Object val) {
-      scope.assign(name, val);
+    void set(Object val, ParserRuleContext errCtx) {
+      scope.assign(name, val, errCtx);
     }
     
   }
@@ -726,7 +740,7 @@ public class StencilInterpreter {
     }
 
     @Override
-    Object get() {
+    Object get(ParserRuleContext errCtx) {
       return visitor.select(source, selector);
     }
     
@@ -734,7 +748,8 @@ public class StencilInterpreter {
       logger.error("{}: attempt to assign to null lvalue", getLocation(selector));
     }
 
-    void set(Object val) {
+    @Override
+    void set(Object val, ParserRuleContext errCtx) {
       
       if(source == null) {
       	nullAssignment();
@@ -942,7 +957,7 @@ public class StencilInterpreter {
     @Override
     public Object visitTemplateImporter(TemplateImporterContext object) {
   
-      TemplateImpl imported = load(value(object.stringLit));
+      TemplateImpl imported = load(value(object.stringLit), object);
       
       Environment prevEnv = switchEnvironment(new Environment(imported.getPath(), new NullWriter()));
       pushScope();
@@ -981,7 +996,7 @@ public class StencilInterpreter {
     
       Class<?> type = loadClass(typeFullName);
       if(type == null) {
-        throw new UndefinedTypeException(typeFullName);
+        throw new UndefinedTypeException(typeFullName, getLocation(object));
       }
     
       currentScope.declare(localName, type);
@@ -1059,7 +1074,7 @@ public class StencilInterpreter {
     @Override
     public Object visitIncludeOutput(IncludeOutputContext object) {
         
-      TemplateImpl included = load(value(object.stringLit));
+      TemplateImpl included = load(value(object.stringLit), object);
   
       Map<String, Object> params;
       Map<String, Object> blocks;
@@ -1184,7 +1199,7 @@ public class StencilInterpreter {
           output(function.prepare(params));
         }
         catch (Throwable e) {
-          throw new InvocationException("error invoking extension function", getLocation(object), e);
+          throw new InvocationException("error invoking extension function", e, getLocation(object));
         }
         
       }
@@ -1266,7 +1281,7 @@ public class StencilInterpreter {
   
           while(iter.next() && currentScope.refControl(OUTPUT_LOOP_CONTROL_VAR) != ControlStatements.Break) {
   
-            currentScope.assign(OUTPUT_LOOP_CONTROL_VAR, null);
+            currentScope.assignControl(OUTPUT_LOOP_CONTROL_VAR, null);
             
             currentScope.declare(name(object.value), iter.getValue());
   
@@ -1302,7 +1317,7 @@ public class StencilInterpreter {
   
         while (evalBoolean(condExpr) && currentScope.refControl(OUTPUT_LOOP_CONTROL_VAR) != ControlStatements.Break) {
   
-          currentScope.assign(OUTPUT_LOOP_CONTROL_VAR, null);
+          currentScope.assignControl(OUTPUT_LOOP_CONTROL_VAR, null);
 
           object.block.accept(this);
   
@@ -1318,13 +1333,13 @@ public class StencilInterpreter {
     
     @Override
     public Object visitBreakOutput(BreakOutputContext object) {
-      currentScope.assign(OUTPUT_LOOP_CONTROL_VAR, ControlStatements.Break);
+      currentScope.assignControl(OUTPUT_LOOP_CONTROL_VAR, ControlStatements.Break);
       return null;
     }
   
     @Override
     public Object visitContinueOutput(ContinueOutputContext object) {
-      currentScope.assign(OUTPUT_LOOP_CONTROL_VAR, ControlStatements.Continue);
+      currentScope.assignControl(OUTPUT_LOOP_CONTROL_VAR, ControlStatements.Continue);
       return null;
     }
   
@@ -1373,7 +1388,7 @@ public class StencilInterpreter {
       //Declare all variables
       List<Object> vars = eval(object.expr);
       
-      pushScope(new WithScope(vars));
+      pushScope(new WithScope(StencilInterpreter.this, vars));
       
       try {
         
@@ -1443,7 +1458,7 @@ public class StencilInterpreter {
     @Override
     public Object visitReturnStatement(ReturnStatementContext object) {
       Object val = eval(object.expr);
-      currentScope.assign(FUNC_RETURN_VAR, val);
+      currentScope.assignControl(FUNC_RETURN_VAR, val);
       return ControlStatements.Return;
     }
   
@@ -1596,7 +1611,7 @@ public class StencilInterpreter {
       //Declare all variables
       List<Object> vars = eval(object.expr);
       
-      pushScope(new WithScope(vars));
+      pushScope(new WithScope(StencilInterpreter.this, vars));
       
       try {
         
@@ -1624,7 +1639,7 @@ public class StencilInterpreter {
   
     @Override
     public Object visitVariableRef(VariableRefContext object) {
-      return currentScope.ref(name(object));
+      return currentScope.ref(name(object), object);
     }
     
     @Override
@@ -1726,12 +1741,12 @@ public class StencilInterpreter {
       String typeFullName = value(ctx.qName);
       Class<?> type = loadClass(typeFullName);
       if(type == null) {
-        Object val = currentScope.ref(typeFullName);        
+        Object val = currentScope.ref(typeFullName, ctx.qName);        
         if(val instanceof Class<?>) {
           type = (Class<?>) val;
         }
         else {
-          throw new UndefinedTypeException(typeFullName);
+          throw new UndefinedTypeException(typeFullName, getLocation(ctx));
         }
       }
       Object value = eval(ctx.expr);
@@ -1774,7 +1789,7 @@ public class StencilInterpreter {
         return operands.lessThanOrEqual(eval(left), eval(right));
       }
       else if (oper.equals("+")) {
-        return operands.add(eval(left), eval(right));
+        return operands.add(eval(left), eval(right), left);
       }
       else if (oper.equals("-")) {
         return operands.subtract(eval(left), eval(right));
@@ -1821,7 +1836,7 @@ public class StencilInterpreter {
       String oper = value(object.operator);
   
       if (oper.equals("++")) {
-        return operands.add(val, 1);
+        return operands.add(val, 1, object);
       }
       else if (oper.equals("--")) {
         return operands.subtract(val, 1);
@@ -1953,7 +1968,7 @@ public class StencilInterpreter {
         }
         catch (IllegalAccessException | InvocationTargetException e) {
           
-          throw new ExecutionException("error executing call", getLocation(sel), e);
+          throw new ExecutionException("error executing call", e, getLocation(sel));
         
         }
         catch (NoSuchMethodException e) {
@@ -2082,7 +2097,7 @@ public class StencilInterpreter {
           return function.call(params);
         }
         catch (Throwable e) {
-          throw new InvocationException("error invoking extension function", getLocation(loc), e);
+          throw new InvocationException("error invoking extension function", e, getLocation(loc));
         }
       }
       else if(source instanceof Class<?>) {
@@ -2218,43 +2233,43 @@ public class StencilInterpreter {
       return null;
     }
 
-    void assign(LValue lvalue, String oper, Object right, ParserRuleContext loc) {
+    void assign(LValue lvalue, String oper, Object right, ParserRuleContext errCtx) {
       
       if (oper.equals("=")) {
-        lvalue.set(right);
+        lvalue.set(right, errCtx);
       }
       else if (oper.equals("+=")) {
-        lvalue.set(operands.add(lvalue.get(), right));
+        lvalue.set(operands.add(lvalue.get(errCtx), right, errCtx), errCtx);
       }
       else if (oper.equals("-=")) {
-        lvalue.set(operands.subtract(lvalue.get(), right));
+        lvalue.set(operands.subtract(lvalue.get(errCtx), right), errCtx);
       }
       else if (oper.equals("*=")) {
-        lvalue.set(operands.multiply(lvalue.get(), right));
+        lvalue.set(operands.multiply(lvalue.get(errCtx), right), errCtx);
       }
       else if (oper.equals("/=")) {
-        lvalue.set(operands.divide(lvalue.get(), right));
+        lvalue.set(operands.divide(lvalue.get(errCtx), right), errCtx);
       }
       else if (oper.equals("%=")) {
-        lvalue.set(operands.mod(lvalue.get(), right));
+        lvalue.set(operands.mod(lvalue.get(errCtx), right), errCtx);
       }
       else if (oper.equals("&=")) {
-        lvalue.set(operands.bitwiseAnd(lvalue.get(), right));
+        lvalue.set(operands.bitwiseAnd(lvalue.get(errCtx), right), errCtx);
       }
       else if (oper.equals("|=")) {
-        lvalue.set(operands.bitwiseOr(lvalue.get(), right));
+        lvalue.set(operands.bitwiseOr(lvalue.get(errCtx), right), errCtx);
       }
       else if (oper.equals("^=")) {
-        lvalue.set(operands.bitwiseXor(lvalue.get(), right));
+        lvalue.set(operands.bitwiseXor(lvalue.get(errCtx), right), errCtx);
       }
       else if (oper.equals("<<=")) {
-        lvalue.set(operands.leftShift(lvalue.get(), right));
+        lvalue.set(operands.leftShift(lvalue.get(errCtx), right), errCtx);
       }
       else if (oper.equals(">>=")) {
-        lvalue.set(operands.rightShift(lvalue.get(), right));
+        lvalue.set(operands.rightShift(lvalue.get(errCtx), right), errCtx);
       }
       else {
-        throw new ExecutionException("invalid assignment operator", getLocation(loc));
+        throw new ExecutionException("invalid assignment operator", getLocation(errCtx));
       }
       
     }
@@ -2265,7 +2280,7 @@ public class StencilInterpreter {
   private Visitor visitor = new Visitor();
   private Environment currentEnvironment;
   private Scope currentScope;
-  private StencilOperands operands = new StencilOperands();
+  private StencilOperands operands = new StencilOperands(this);
   private LoadingCache<Callable,CallableSignatureContext> extensionCallableSignatureCache = CacheBuilder.newBuilder().build(new CacheLoader<Callable,CallableSignatureContext>() {
 
     @Override
@@ -2325,7 +2340,7 @@ public class StencilInterpreter {
   
   public StencilInterpreter(StencilEngine engine, Iterable<GlobalScope> globalScopes) {
     this.engine = engine;    
-    this.currentScope = new RootScope(globalScopes);
+    this.currentScope = new RootScope(StencilInterpreter.this, globalScopes);
   }
 
   public StencilInterpreter declare(Map<String,Object> parameters) {
@@ -2352,7 +2367,7 @@ public class StencilInterpreter {
    * Loads a template from the supplied template loader.
    * 
    */
-  private TemplateImpl load(String path) {
+  private TemplateImpl load(String path, ParserRuleContext errCtx) {
 
   	path = Paths.resolvePath(currentEnvironment.path, path);
   	
@@ -2360,7 +2375,7 @@ public class StencilInterpreter {
       return (TemplateImpl) engine.load(path);
     }
     catch (IOException | ParseException e) {
-      throw new ExecutionException(e);
+      throw new ExecutionException("error importing " + path, e, getLocation(errCtx));
     }
   }
 
@@ -2405,7 +2420,7 @@ public class StencilInterpreter {
    * 
    */
   private void pushScope() {
-    pushScope(new Scope(currentScope));
+    pushScope(new Scope(this, currentScope));
   }
 
   /**
@@ -2438,7 +2453,7 @@ public class StencilInterpreter {
    * @param inv Invocation of call
    * @return Map of String => Object representing call parameters
    */
-  private Map<String, Object> bindParams(CallableSignatureContext sig, CallableInvocationContext inv) throws ExecutionException {
+  private Map<String, Object> bindParams(CallableSignatureContext sig, CallableInvocationContext inv) {
     
     if(inv == null) {
       return Collections.emptyMap();
@@ -2472,7 +2487,7 @@ public class StencilInterpreter {
 
         if (paramDecl.flag != null && paramDecl.flag.getText().equals("*")) {
           if (allDecl != null) {
-            throw new ExecutionException("only a single parameter can be marked with '*'");
+            throw new ExecutionException("only a single parameter can be marked with '*'", getLocation(paramDecl));
           }
           allDecl = paramDecl;
           continue;
@@ -2608,18 +2623,18 @@ public class StencilInterpreter {
       if (blockDecl.flag != null) {
         if (blockDecl.flag.getText().equals("*")) {
           if (allDecl != null) {
-            throw new ExecutionException("only a single parameter can be marked with '*'");
+            throw new ExecutionException("only a single parameter can be marked with '*'", getLocation(blockDecl));
           }
           allDecl = blockDecl;
         }
         else if (blockDecl.flag.getText().equals("+")) {
           if (unnamedDecl != null) {
-            throw new ExecutionException("only a single parameter can be marked with '+'");
+            throw new ExecutionException("only a single parameter can be marked with '+'", getLocation(blockDecl));
           }
           unnamedDecl = blockDecl;
         }
         else {
-          throw new ExecutionException("unknown block declaration flag");
+          throw new ExecutionException("unknown block declaration flag", getLocation(blockDecl));
         }
         continue;
       }
@@ -2763,12 +2778,12 @@ public class StencilInterpreter {
     while(res instanceof ExpressionContext)
       res = ((ExpressionContext)res).accept(visitor);
     if(res instanceof LValue)
-      res = ((LValue) res).get();
+      res = ((LValue) res).get(expr);
     return res;
   }
   
   private Object eval(VariableRefContext ref) {
-    return currentScope.ref(name(ref));
+    return currentScope.ref(name(ref), ref);
   }
   
   private LValue eval(LValueRefContext ref) {
@@ -2857,7 +2872,7 @@ public class StencilInterpreter {
    * @param object Model object to locate
    * @return Location for the provided model object
    */
-  private ExecutionLocation getLocation(ParserRuleContext object) {
+  ExecutionLocation getLocation(ParserRuleContext object) {
     Token start = object.getStart();
     return new ExecutionLocation(currentEnvironment.path, start.getLine(), start.getCharPositionInLine());
   }
@@ -2869,7 +2884,10 @@ public class StencilInterpreter {
       currentEnvironment.out.append(val.toString());
     }
     catch (IOException e) {
-      throw new ExecutionException(e);
+      ExecutionLocation location = null;
+      if (val instanceof ParserRuleContext)
+        location = getLocation((ParserRuleContext) val);        
+      throw new ExecutionException(e, location);
     }
   }
   

@@ -123,6 +123,7 @@ import com.impossibl.stencil.engine.parsing.StencilParser.SwitchStatementCaseCon
 import com.impossibl.stencil.engine.parsing.StencilParser.SwitchStatementContext;
 import com.impossibl.stencil.engine.parsing.StencilParser.SwitchStatementDefaultCaseContext;
 import com.impossibl.stencil.engine.parsing.StencilParser.SwitchStatementValueCaseContext;
+import com.impossibl.stencil.engine.parsing.StencilParser.TemplateContext;
 import com.impossibl.stencil.engine.parsing.StencilParser.TemplateImporterContext;
 import com.impossibl.stencil.engine.parsing.StencilParser.TernaryExpressionContext;
 import com.impossibl.stencil.engine.parsing.StencilParser.TextOutputContext;
@@ -2360,8 +2361,30 @@ public class StencilInterpreter {
 
     Environment prevEnv = switchEnvironment(env);
     
+    TemplateContext tmpl = template.getContext();
+    HeaderContext hdr = tmpl.hdr;
+    
+    if (hdr != null &&
+        hdr.hdrSig != null &&
+        hdr.hdrSig.callSig != null &&
+        hdr.hdrSig.callSig.paramDecls != null) {
+      
+      for (ParameterDeclContext paramDecl : hdr.hdrSig.callSig.paramDecls) {
+        
+        String paramId = paramDecl.id.getText();
+        
+        if (!currentScope.values.containsKey(paramId)) {
+          
+          currentScope.declare(paramId, eval(paramDecl.expr));
+          
+        }
+        
+      }
+      
+    }
+    
 		try {
-			template.getContext().accept(visitor);
+			tmpl.accept(visitor);
 		}
 		finally {
 		  switchEnvironment(prevEnv);

@@ -28,23 +28,15 @@
  */
 package com.impossibl.stencil.engine.tests;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import org.junit.Test;
 
-@RunWith(Suite.class)
-@SuiteClasses({
-  ExpressionTest.class,
-  MacroTest.class,
-  OutputTest.class,
-  StatementTest.class,
-  HtmlExtensionMethodsTest.class,
-  ImportTest.class,
-  CommentTest.class,
-  ErrorTest.class,
-  FunctionTest.class,
-  EscapeTest.class,
-  TemplateTest.class})
-public class AllTests {
+import com.impossibl.stencil.engine.ParseException;
+
+public class TemplateTest extends Tests {
+
+  @Test
+  public void testDefaulParameters() throws ParseException {
+    assertMatch("$$(val='Default');$val;", "Default");
+  }
 
 }

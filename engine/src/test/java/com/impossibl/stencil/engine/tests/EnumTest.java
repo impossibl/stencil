@@ -28,54 +28,40 @@
  */
 package com.impossibl.stencil.engine.tests;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import org.junit.Test;
 
-import java.io.IOException;
-import java.util.Map;
-
+import com.google.common.collect.ImmutableMap;
 import com.impossibl.stencil.engine.ParseException;
-import com.impossibl.stencil.engine.StencilEngine;
 
-public class Tests {
+public class EnumTest extends Tests {
+  
+  public enum Tester {
+    AnEnumVal
+  }
+  
+  public enum Tester2 {
+    AnEnumVal
+  }
+  
+  public class NonString {
+    public String toString() {
+      return "AnEnumVal";
+    }
+  }
 
-  StencilEngine engine = new StencilEngine();
-  
-  String eval(String template) throws ParseException {
-    try {
-      return engine.renderInline(template);
-    }
-    catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+  @Test
+  public void testStringCompare() throws ParseException {
+    assertMatch("$$(val);$val=='AnEnumVal'?'MATCHED';", ImmutableMap.<String,Object>of("val", Tester.AnEnumVal), "MATCHED");
   }
-  
-  String eval(String template, Map<String,Object> params) throws ParseException {
-    try {
-      return engine.renderInline(template, params);
-    }
-    catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+
+  @Test
+  public void testDifferentEnumCompare() throws ParseException {
+    assertMatch("$$(val1,val2);$val1==val2?'MATCHED';", ImmutableMap.<String,Object>of("val1", Tester.AnEnumVal, "val2", Tester2.AnEnumVal), "MATCHED");
   }
-  
-  void assertMatch(String template, String res) {
-    try {
-      assertThat(eval(template), is(equalTo(res)));
-    }
-    catch (ParseException e) {
-      throw new RuntimeException(e);
-    }
+
+  @Test
+  public void testNonStringCompare() throws ParseException {
+    assertMatch("$$(val1,val2);$val1==val2?'MATCHED';", ImmutableMap.<String,Object>of("val1", Tester.AnEnumVal, "val2", new NonString()), "MATCHED");
   }
-  
-  void assertMatch(String template, Map<String,Object> params, String res) {
-    try {
-      assertThat(eval(template,params), is(equalTo(res)));
-    }
-    catch (ParseException e) {
-      throw new RuntimeException(e);
-    }
-  }
-  
+
 }

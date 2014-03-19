@@ -1362,7 +1362,7 @@ public class StencilInterpreter {
           
           Object caseValue = eval(valueCase.expr);
   
-          if (switchValue.equals(caseValue)) {
+          if (operands.equals(switchValue, caseValue)) {
   
             valueCase.block.accept(this);
   
@@ -1583,7 +1583,7 @@ public class StencilInterpreter {
 
           Object caseValue = eval(valueCase.expr);
   
-          if(switchValue.equals(caseValue)) {
+          if(operands.equals(switchValue,caseValue)) {
   
             exec(valueCase.stmt);
             

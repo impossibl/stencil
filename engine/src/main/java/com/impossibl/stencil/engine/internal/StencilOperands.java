@@ -756,6 +756,9 @@ public class StencilOperands {
       else if (left instanceof String || right instanceof String) {
         return toString(left).compareTo(toString(right));
       }
+      else if (left instanceof Enum || right instanceof Enum) {
+        return toString(left).compareTo(toString(right));
+      }
       else if ("==".equals(operator)) {
         return left.equals(right) ? 0 : -1;
       }

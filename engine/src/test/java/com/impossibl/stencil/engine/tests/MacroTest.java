@@ -75,12 +75,12 @@ public class MacroTest extends Tests {
   
   @Test
   public void testAllBlock() {
-    assertMatch("$macro test() [*a] {$a;};$test a {AAA} b {BBB};","{b=BBB, a=AAA}");
+    assertMatch("$macro test() [*a] {$a;};$test a {AAA} b {BBB};","{a=AAA, b=BBB}");
   }
   
   @Test
   public void testAllAndUnnamedBlock() {
-    assertMatch("$macro test() [+a,*b] {$a;$b;};$test {UNNAMED} a {AAA} b {BBB};","UNNAMED{b=BBB, a=AAA}");
+    assertMatch("$macro test() [+a,*b] {$a;$b;};$test {UNNAMED} a {AAA} b {BBB};","UNNAMED{a=AAA, b=BBB}");
   }
   
   @Test

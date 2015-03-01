@@ -240,8 +240,8 @@ public class ExpressionTest extends Tests {
 
   @Test
   public void testMapLiteral() {
-    assertMatch("$[x=1,y=2,z='3'];","{z=3, y=2, x=1}");
-    assertMatch("$['...'=1,'4-5'=2,'xx!'='3'];","{...=1, 4-5=2, xx!=3}");
+    assertMatch("$[x=1,y=2,z='3'];","{x=1, y=2, z=3}");
+    assertMatch("$['...'=1,'4-5'=2,'xx!'='3'];","{xx!=3, 4-5=2, ...=1}");
     assertMatch("$[=];","{}");
   }
 

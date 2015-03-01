@@ -1,6 +1,6 @@
 package com.impossibl.stencil.ext.std;
 
-import static com.google.common.base.Objects.firstNonNull;
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Strings.nullToEmpty;
 
 import java.util.Map;

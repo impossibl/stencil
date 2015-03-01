@@ -1,5 +1,7 @@
 package com.impossibl.stencil.api.impl;
 
+import static com.google.common.base.Charsets.UTF_8;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -32,7 +34,7 @@ public class InlineTemplateSource implements TemplateSource {
 	 * @return MD5 hash of the source text
 	 */
 	static String hash(String text) {
-		return Hashing.md5().hashString(text).toString();
+		return Hashing.md5().hashString(text, UTF_8).toString();
 	}
 
 	@Override

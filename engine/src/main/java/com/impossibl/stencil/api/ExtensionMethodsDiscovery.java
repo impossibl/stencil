@@ -11,6 +11,8 @@ package com.impossibl.stencil.api;
  * @author kdubb
  *
  */
-public interface ExtensionMethods {
-  
+public interface ExtensionMethodsDiscovery {
+
+  Class<?>[] getExtensionMethodProviders();
+
 }

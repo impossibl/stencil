@@ -1,54 +1,55 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-	<modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-	<artifactId>engine-cdi</artifactId>
+    <artifactId>engine-cdi</artifactId>
 
-	<packaging>jar</packaging>
+    <packaging>jar</packaging>
 
-	<parent>
-		<groupId>com.impossibl.stencil</groupId>
-		<artifactId>root</artifactId>
-		<version>0.1-SNAPSHOT</version>
-		<relativePath>..</relativePath>
-	</parent>
+    <parent>
+        <groupId>com.impossibl.stencil</groupId>
+        <artifactId>root</artifactId>
+        <version>0.1-SNAPSHOT</version>
+        <relativePath>..</relativePath>
+    </parent>
 
-	<dependencies>
-		<dependency>
-			<groupId>com.impossibl.stencil</groupId>
-			<artifactId>engine</artifactId>
-			<version>0.1-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.enterprise</groupId>
-			<artifactId>cdi-api</artifactId>
-			<version>1.1-20130403</version>
-			<scope>provided</scope>
-		</dependency>
-	</dependencies>
-	
-  <name>Stencil Template Engine - CDI</name>
-  <url>http://impossibl.github.io/stencil/</url>
-  <description>
-    Stencil Template Engine CDI Integration Library
-  </description>
-  <inceptionYear>2013</inceptionYear>
-  <organization>
-    <name>Impossibl.com</name>
-    <url>http://www.impossibl.com</url>
-  </organization>
-  <licenses>
-   <license>
-     <name>BSD Revised</name>
-     <url>http://opensource.org/licenses/BSD-3-Clause</url>
-     <distribution>repo</distribution>
-   </license>
-  </licenses>
-  <developers>
-   <developer>
-     <id>kdubb</id>
-     <name>Kevin Wooten</name>
-   </developer>
-  </developers>
+    <dependencies>
+        <dependency>
+            <groupId>com.impossibl.stencil</groupId>
+            <artifactId>engine</artifactId>
+            <version>0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.enterprise</groupId>
+            <artifactId>cdi-api</artifactId>
+            <version>1.1-20130403</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <name>Stencil Template Engine - CDI</name>
+    <url>http://impossibl.github.io/stencil/</url>
+    <description>
+        Stencil Template Engine CDI Integration Library
+    </description>
+    <inceptionYear>2013</inceptionYear>
+    <organization>
+        <name>Impossibl.com</name>
+        <url>http://www.impossibl.com</url>
+    </organization>
+    <licenses>
+        <license>
+            <name>BSD Revised</name>
+            <url>http://opensource.org/licenses/BSD-3-Clause</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <id>kdubb</id>
+            <name>Kevin Wooten</name>
+        </developer>
+    </developers>
 
 </project>

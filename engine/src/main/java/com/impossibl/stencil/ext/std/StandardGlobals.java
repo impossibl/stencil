@@ -1,14 +1,13 @@
 package com.impossibl.stencil.ext.std;
 
-import java.util.Map;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.google.common.collect.ImmutableMap;
 import com.impossibl.stencil.api.GlobalScope;
 import com.impossibl.stencil.api.Named;
 import com.impossibl.stencil.engine.StencilEngine;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.Map;
 
 public class StandardGlobals implements GlobalScope {
   
@@ -39,7 +38,7 @@ public class StandardGlobals implements GlobalScope {
     add(builder, new JoinFunction());
     add(builder, new RawFunction());
     add(builder, new AttrsFunction());
-    
+
     return builder.build();
   }
 

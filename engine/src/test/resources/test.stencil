@@ -53,6 +53,20 @@ $with test {
 	$class.name;
 };
 
+// Standard collection (with all iteration parameters)
 $foreach x,it in [0,1,2,3,4,5] {
 	<tr class="$it.odd?'odd';"> $x; $it.index; $it.count; $it.even; $it.odd; $it.hasNext;</tr>
+};
+
+// Empty collection with else block
+$foreach x in [] {
+  Shouldn't print
+}
+else {
+  It's Empty!
+};
+
+// Empty collection with no else block
+$foreach x in [] {
+  Shouldn't print
 };

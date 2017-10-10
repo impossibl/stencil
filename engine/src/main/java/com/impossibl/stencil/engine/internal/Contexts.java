@@ -1,35 +1,16 @@
 package com.impossibl.stencil.engine.internal;
 
-import java.util.List;
-
+import com.impossibl.stencil.engine.parsing.ParamOutputBlockMode;
+import com.impossibl.stencil.engine.parsing.StencilParser;
+import com.impossibl.stencil.engine.parsing.StencilParser.*;
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import com.impossibl.stencil.engine.parsing.ParamOutputBlockMode;
-import com.impossibl.stencil.engine.parsing.StencilParser;
-import com.impossibl.stencil.engine.parsing.StencilParser.BlockDeclContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.BooleanLiteralContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.CallableSignatureContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.FloatingLiteralContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.FunctionDefinitionContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.IntegerLiteralContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.LValueRefContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.MacroDefinitionContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.MemberIndexSelectorContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.MemberSelectorContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.MethodCallSelectorContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.NamedOutputBlockContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.NamedValueContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.ParamOutputBlockModeContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.ParameterDeclContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.SafeMemberSelectorContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.SimpleNameContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.StringLiteralContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.UnnamedOutputBlockContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.VariableDeclContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.VariableRefContext;
+import java.util.List;
+
+
 
 public class Contexts {
 
@@ -169,13 +150,19 @@ public class Contexts {
       return null;
     return value(ctx.id);
   }
-  
+
   public static String name(MemberIndexSelectorContext ctx) {
     if(ctx == null)
       return null;
     return value(ctx.id);
   }
-  
+
+  public static String name(SafeMemberIndexSelectorContext ctx) {
+    if(ctx == null)
+      return null;
+    return value(ctx.id);
+  }
+
   public static String name(MacroDefinitionContext ctx) {
     if(ctx == null)
       return null;

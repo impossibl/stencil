@@ -65,7 +65,8 @@ public class OutputTest extends Tests {
     assertMatch("$foreach x,xit in [1,2,3,4,5] {$xit.odd;,};", "true,false,true,false,true,");
     assertMatch("$foreach x,xit in [1,2,3,4,5] {$xit.hasNext;,};", "true,true,true,true,false,");
     assertMatch("$foreach x in [] {SOME} else {NONE};", "NONE");
-    
+    assertMatch("$foreach x in [] {SOME};", "");
+
   }  
 
   @Test

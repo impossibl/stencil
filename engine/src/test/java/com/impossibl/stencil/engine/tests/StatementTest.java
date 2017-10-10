@@ -67,7 +67,7 @@ public class StatementTest extends Tests {
     assertMatch("$func test() { var r=''; foreach x,it in [0,1,2] r+=it.hasNext; return r;};$test();", "truetruefalse");
     assertMatch("$func test() { var r=''; foreach x,it in [0,1,2] r+=it.even; return r;};$test();", "falsetruefalse");
     assertMatch("$func test() { var r=''; foreach x,it in [0,1,2] r+=it.odd; return r;};$test();", "truefalsetrue");
-    assertMatch("$func test() { var r=''; foreach x,it in [] r+=it.index; else r='none'; return r;};$test();", "none");
+    assertMatch("$func test() { var r=''; foreach x,it in [] r+=it.index; return r;};$test();", "");
   }
   
   @Test

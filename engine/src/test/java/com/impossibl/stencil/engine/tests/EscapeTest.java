@@ -36,12 +36,18 @@ public class EscapeTest extends Tests {
 
   @Test
   public void testEscapeSingle() throws ParseException {
-    assertMatch("\\$\\{\\}", "${}");
+    assertMatch("$raw() {\\$\\{\\}};", "${}");
   }
   
   @Test
   public void testEscapeDouble() throws ParseException {
     assertMatch("$raw() {{\\$$\\{{\\}} $(){} }};", "$${{}} $(){} ");
+  }
+
+  @Test
+  public void testDontNeedEscape() throws ParseException {
+    assertMatch("interface{}", "interface{}");
+    assertMatch("\\${}", "${}");
   }
 
 }

@@ -8,7 +8,7 @@ options {
 
 
 template:
-	hdr=header contents+=content+
+	hdr=header contents+=content+ EOF
 ;
 
 content:
@@ -260,10 +260,12 @@ valueSelector:
 ;
 
 refSelector:
-	  DOT id=ID SQUARE_OPEN expr=expression SQUARE_CLOSE		#memberIndexSelector
-	| DOT id=ID																							#memberSelector
-	| QUESTDOT id=ID																				#safeMemberSelector
-	| SQUARE_OPEN expr=expression SQUARE_CLOSE							#indexSelector
+	  DOT id=ID SQUARE_OPEN expr=expression SQUARE_CLOSE		    #memberIndexSelector
+	| QUESTDOT id=ID SQUARE_OPEN expr=expression SQUARE_CLOSE		#safeMemberIndexSelector
+	| DOT id=ID																							    #memberSelector
+	| QUESTDOT id=ID																				    #safeMemberSelector
+	| SQUARE_OPEN expr=expression SQUARE_CLOSE							    #indexSelector
+	| QUEST SQUARE_OPEN expr=expression SQUARE_CLOSE						#safeIndexSelector
 ;
 
 

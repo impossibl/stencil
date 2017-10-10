@@ -60,7 +60,7 @@ mode OUTPUTS;
 COMMENT: '$*' .*? '*$';
 
 DTEXTS_MODE: '{{' -> pushMode(DTEXTS), type(TEXTS_MODE);
-STEXTS_MODE: {statementBlocks<0}? '{' -> pushMode(STEXTS), type(TEXTS_MODE);
+STEXTS_MODE: {statementBlocks<0}? '{' -> pushMode(DEFAULT_MODE), type(TEXTS_MODE);
 OUTPUTS_END: {statementBlocks<=0}? ';' {resetStatementBlocks(); popMode();};
 
 FUNC: 'func' {incStatementBlocks(); setType(KEYWORD);};

@@ -1,23 +1,21 @@
 package com.impossibl.stencil.engine.cdi;
 
-import java.util.Set;
+import com.impossibl.stencil.api.GlobalScope;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.CDI;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import com.impossibl.stencil.api.GlobalScope;
+import java.util.Set;
 
 public class CDIGlobals implements GlobalScope {
   
   private static final Logger logger = LogManager.getLogger(CDIGlobals.class);
 
-  BeanManager beanManager = CDI.current().getBeanManager();
-  CreationalContext<?> globalContext = beanManager.createCreationalContext(null);
+  private BeanManager beanManager = CDI.current().getBeanManager();
+  private CreationalContext<?> globalContext = beanManager.createCreationalContext(null);
 
   public CDIGlobals() {
     logger.info("Initializing CDI Globals");

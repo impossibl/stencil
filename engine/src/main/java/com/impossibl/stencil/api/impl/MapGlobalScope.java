@@ -1,8 +1,8 @@
 package com.impossibl.stencil.api.impl;
 
-import java.util.Map;
-
 import com.impossibl.stencil.api.GlobalScope;
+
+import java.util.Map;
 
 /**
  * GlobalScope backed by Map
@@ -13,7 +13,7 @@ import com.impossibl.stencil.api.GlobalScope;
 public class MapGlobalScope implements GlobalScope {
   
   
-  Map<String, Object> source;
+  private Map<String, Object> source;
   
 
   public MapGlobalScope(Map<String, Object> source) {

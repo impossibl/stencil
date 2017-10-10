@@ -1,40 +1,5 @@
 package com.impossibl.stencil.engine.internal;
 
-import static com.google.common.base.Strings.nullToEmpty;
-import static com.impossibl.stencil.api.Callable.ALL_PARAM_NAME;
-import static com.impossibl.stencil.api.Preparable.ALL_BLOCK_NAME;
-import static com.impossibl.stencil.api.Preparable.UNNAMED_BLOCK_NAME;
-import static com.impossibl.stencil.engine.internal.Contexts.mode;
-import static com.impossibl.stencil.engine.internal.Contexts.name;
-import static com.impossibl.stencil.engine.internal.Contexts.value;
-import static com.impossibl.stencil.engine.internal.ExtensionMethodManager.getExtensionMethod;
-
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Set;
-
-import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.tree.RuleNode;
-import org.apache.commons.beanutils.ConstructorUtils;
-import org.apache.commons.beanutils.MethodUtils;
-import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.google.common.base.Splitter;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -47,98 +12,33 @@ import com.impossibl.stencil.api.Block;
 import com.impossibl.stencil.api.Callable;
 import com.impossibl.stencil.api.GlobalScope;
 import com.impossibl.stencil.api.Preparable;
-import com.impossibl.stencil.engine.ExecutionException;
-import com.impossibl.stencil.engine.ExecutionLocation;
-import com.impossibl.stencil.engine.InvocationException;
-import com.impossibl.stencil.engine.ParseException;
-import com.impossibl.stencil.engine.StencilEngine;
-import com.impossibl.stencil.engine.UndefinedTypeException;
-import com.impossibl.stencil.engine.UndefinedVariableException;
+import com.impossibl.stencil.engine.*;
 import com.impossibl.stencil.engine.parsing.ParamOutputBlockMode;
-import com.impossibl.stencil.engine.parsing.StencilParser.AssignOutputContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.AssignmentContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.AssignmentStatementContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.BinaryExpressionContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.BlockDeclContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.BlockStatementContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.BooleanLiteralContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.BreakOutputContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.BreakStatementContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.CallSelectorContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.CallableInvocationContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.CallableSignatureContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.ContinueOutputContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.ContinueStatementContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.DeclarationOutputContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.DeclarationStatementContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.DynamicOutputContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.ExportDefinitionContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.ExpressionContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.ExpressionOutputContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.ExpressionStatementContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.FloatingLiteralContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.ForeachOutputContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.ForeachStatementContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.FunctionDefinitionContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.HeaderContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.IfOutputContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.IfStatementContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.IncludeOutputContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.IndexSelectorContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.InstanceExpressionContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.IntegerLiteralContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.LValueRefContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.ListLiteralContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.LiteralContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.LiteralExpressionContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.MacroDefinitionContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.MapLiteralContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.MemberIndexSelectorContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.MemberSelectorContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.MethodCallSelectorContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.NamedOutputBlockContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.NamedValueContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.NullLiteralContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.NumberLiteralContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.OutputBlockContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.OutputContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.ParameterDeclContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.ParenExpressionContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.PrepareInvocationContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.PrepareSignatureContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.RangeLiteralContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.RefSelectorContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.ReturnStatementContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.SafeMemberSelectorContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.SelectorContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.SelectorExpressionContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.SimpleNameContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.StatementContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.StringLiteralContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.SwitchOutputCaseContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.SwitchOutputContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.SwitchOutputDefaultCaseContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.SwitchOutputValueCaseContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.SwitchStatementCaseContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.SwitchStatementContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.SwitchStatementDefaultCaseContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.SwitchStatementValueCaseContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.TemplateContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.TemplateImporterContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.TernaryExpressionContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.TextOutputContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.TypeImporterContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.UnaryExpressionContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.UnnamedOutputBlockContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.ValueSelectorContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.VariableDeclContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.VariableRefContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.VariableRefExpressionContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.WhileOutputContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.WhileStatementContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.WithOutputContext;
-import com.impossibl.stencil.engine.parsing.StencilParser.WithStatementContext;
+import com.impossibl.stencil.engine.parsing.StencilParser.*;
 import com.impossibl.stencil.engine.parsing.StencilParserBaseVisitor;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.RuleNode;
+import org.apache.commons.beanutils.ConstructorUtils;
+import org.apache.commons.beanutils.MethodUtils;
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.*;
+
+import static com.google.common.base.Strings.nullToEmpty;
+import static com.impossibl.stencil.api.Callable.ALL_PARAM_NAME;
+import static com.impossibl.stencil.api.Preparable.ALL_BLOCK_NAME;
+import static com.impossibl.stencil.api.Preparable.UNNAMED_BLOCK_NAME;
+import static com.impossibl.stencil.engine.internal.Contexts.*;
+import static com.impossibl.stencil.engine.internal.ExtensionMethodManager.getExtensionMethod;
 
 
 public class StencilInterpreter {
@@ -517,7 +417,7 @@ public class StencilInterpreter {
 
     /**
      * Binds more parameters to the block
-     * @param parameters Parameters to bind to the block
+     * @param params Parameters to bind to the block
      */
     public void declareParams(Map<String, ?> params) {
       
@@ -527,7 +427,7 @@ public class StencilInterpreter {
     
     /**
      * Binds more parameters to the block
-     * @param parameters Parameters to bind to the block
+     * @param blocks Block parameters to bind to the block
      */
     public void declareBlocks(Map<String, Object> blocks) {
     
@@ -775,7 +675,7 @@ public class StencilInterpreter {
         MemberIndexSelectorContext sel = (MemberIndexSelectorContext)selector;
         setMemberIndex(source, name(sel), eval(sel.expr), val);
       }
-      
+
     }
     
     void setMemberIndex(Object source, String member, Object index, Object val) {
@@ -820,15 +720,15 @@ public class StencilInterpreter {
     void setIndex(Object source, int index, Object val) {
       
       if(source.getClass().isArray()) {
-        
+
         Array.set(source, index, val);
         
       }
       else if(source instanceof List<?>) {
-        
+
         @SuppressWarnings("unchecked")
         List<Object> list = ((List<Object>)source);
-        
+
         list.set(index, val);
         
       }
@@ -1909,16 +1809,16 @@ public class StencilInterpreter {
       throw new ExecutionException("unknown selector", getLocation(sel));
     }
     
-    Object select(Object source, RefSelectorContext sel) {        
+    Object select(Object source, RefSelectorContext sel) {
 
       if(sel instanceof MemberIndexSelectorContext) {
         return select(source, (MemberIndexSelectorContext)sel);
       }
-      
+
       if(sel instanceof IndexSelectorContext) {
         return select(source, (IndexSelectorContext)sel);
       }
-      
+
       if(sel instanceof MemberSelectorContext) {
         return select(source, (MemberSelectorContext)sel);
       }
@@ -2006,30 +1906,30 @@ public class StencilInterpreter {
       }
   
     }
-    
+
     Object select(Object source, MemberIndexSelectorContext sel) {
-      
+
       if(logger.isTraceEnabled()) {
         logger.trace("Evaluating member index selector: {}", sel.getText());
       }
-      
+
       String member = name(sel);
-      Object index = eval(sel.expr);      
-  
+      Object index = eval(sel.expr);
+
       return selectMemberIndex(source, member, index, sel);
     }
-    
+
     Object select(Object source, IndexSelectorContext sel) {
-      
+
       if(logger.isTraceEnabled()) {
         logger.trace("Evaluating index selector: {}", sel.getText());
       }
-      
+
       Object selectorValue = eval(sel.expr);
 
       return selectIndex(source, selectorValue, sel);
     }
-    
+
     Object select(Object source, MemberSelectorContext sel) {
       
       if(logger.isTraceEnabled()) {
@@ -2191,7 +2091,7 @@ public class StencilInterpreter {
       }
 
       if(source.getClass().isArray()) {
-        
+
         return Array.get(source, index);
         
       }
@@ -2228,6 +2128,31 @@ public class StencilInterpreter {
         throw new ExecutionException(e, getLocation(loc));
       }
       catch (NoSuchMethodException e) {
+
+        try {
+          return source.getClass().getMethod(property).invoke(source);
+        }
+        catch(IllegalAccessException | InvocationTargetException e2) {
+          throw new ExecutionException(e, getLocation(loc));
+        }
+        catch(NoSuchMethodException ignored) {
+
+          Method extensionMethod = getExtensionMethod(source.getClass(), property);
+          if(extensionMethod != null) {
+
+            try {
+
+              return extensionMethod.invoke(null, source);
+
+            }
+            catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
+              throw new ExecutionException(e1, getLocation(loc));
+            }
+
+          }
+
+        }
+
         if(!safe) {
           logger.error("{}: property '{}' does not exist", getLocation(loc), property);
         }
@@ -2839,8 +2764,8 @@ public class StencilInterpreter {
    * Execute a statement block until the first
    * return statement is reached.
    * 
-   * @param block StatementBlock to evaluate
-   * @return Result of expression evaluate
+   * @param statement StatementContext to execute
+   * @return Result of statement execution
    */
   private Object exec(StatementContext statement) {
     if (statement == null)

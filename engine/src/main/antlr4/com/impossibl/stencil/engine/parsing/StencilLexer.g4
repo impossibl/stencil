@@ -2,7 +2,6 @@
 lexer grammar StencilLexer;
 
 @members {
-	public static final int STEXTS = DEFAULT_MODE;
 	public static final int KEYWORD_FIRST=EXPORT;
 	public static final int KEYWORD_LAST=FALSE;
 	
@@ -36,13 +35,25 @@ tokens {
 	TEXTS_END
 }
 
+DEFCOMMENT: '$*' .*? '*$' -> channel(HIDDEN);
+
+DEFTEXTESC_OUTS: '\\$' { setText("$"); setType(TEXT); };
+
+HEADERS_MODE: '$$' -> pushMode(OUTPUTS);
+DEFOUTPUTS_MODE: '$' -> pushMode(OUTPUTS), type(OUTPUTS_MODE);
+
+DEFTEXTWS: [ \t\r\n]+ -> type(TEXTWS);
+
+DEFTEXT: (~[$])+ -> type(TEXT);
+
+mode STEXTS;
+
 SCOMMENT: '$*' .*? '*$' -> channel(HIDDEN);
 
 STEXTESC_OUTS: '\\$' { setText("$"); setType(TEXT); };
 STEXTESC_OPEN: '\\{' { setText("{"); setType(TEXT); };
 STEXTESC_CLOS: '\\}' { setText("}"); setType(TEXT); };
 
-HEADERS_MODE: '$$' -> pushMode(OUTPUTS);
 SOUTPUTS_MODE: '$' -> pushMode(OUTPUTS), type(OUTPUTS_MODE);
 STEXTS_END: '}' -> popMode, type(TEXTS_END);
 
@@ -74,7 +85,7 @@ DTEXT: (~[\\$}])+ -> type(TEXT);
 mode OUTPUTS;
 
 COMMENT1: '$*' .*? '*$' -> channel(HIDDEN);
-COMMENT2: '//'..'\n' -> channel(HIDDEN);
+COMMENT2: '//' .*? '\n' -> channel(HIDDEN);
 
 DTEXTS_MODE: '{{' -> pushMode(DTEXTS), type(TEXTS_MODE);
 STEXTS_MODE: {statementBlocks<0}? '{' -> pushMode(STEXTS), type(TEXTS_MODE);
